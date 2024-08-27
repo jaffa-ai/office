@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload and Process Transcripts</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e0eafc);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            border: 1px solid #ddd;
+        }
+        h1 {
+            font-size: 28px;
+            color: #0078d4;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        input[type="file"] {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+            font-size: 14px;
+        }
+        button {
+            padding: 14px 22px;
+            font-size: 16px;
+            color: #ffffff;
+            background: linear-gradient(90deg, #0078d4, #00aaff);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #005a9e, #0099e2);
+            transform: scale(1.05);
+        }
+        .output-section {
+            margin-top: 30px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #0078d4;
+            margin-bottom: 10px;
+        }
+        pre {
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Transcript Upload and Processing</h1>
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="pdfFile">Upload Previous Quarter Earnings Transcript (PDF):</label>
+                <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required>
+            </div>
+            <div class="form-group">
+                <label for="audioFile">Upload Earnings Call MP3 File:</label>
+                <input type="file" id="audioFile" name="audioFile" accept="audio/mpeg" required>
+            </div>
+            <button type="button" onclick="uploadFiles()">Upload and Process</button>
+            <button type="button" onclick="summarize()">Summarize</button>
+        </form>
+        <div class="output-section">
+            <h2>Processed Output:</h2>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+    <script src="taskpane.js"></script>
+</body>
+</html>
