@@ -22,7 +22,7 @@ async function uploadFiles() {
     formData.append('audio', audioFile);
 
     try {
-        const response = await fetch('https://audio-transcript-summary.onrender.com/process', {
+        const response = await fetch('http://127.0.0.1:5000/process', {
             method: 'POST',
             body: formData
         });
@@ -73,7 +73,7 @@ async function summarize() {
     formData.append('text', correctedText); // Send the corrected text
 
     try {
-        const response = await fetch('https://audio-transcript-summary.onrender.com/summarize', {
+        const response = await fetch('http://127.0.0.1:5000/summarize', {
             method: 'POST',
             body: formData
         });
