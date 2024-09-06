@@ -2,10 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=taskpane.html">
-    <title>Redirecting...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcript Interface</title>
+    <link rel="stylesheet" href="t.css">
 </head>
 <body>
-    <p>If you are not redirected, <a href="taskpane.html">click here</a>.</p>
+    <!-- Upload Page -->
+    <div id="uploadPage" class="container">
+        <div class="file-upload">
+            <label for="pdfInput" class="custom-file-label">Upload PDF</label>
+            <input type="file" id="pdfInput" accept=".pdf">
+            
+            <label for="audioInput" class="custom-file-label">Upload Audio</label>
+            <input type="file" id="audioInput" accept=".mp3">
+            
+            <button class="upload-btn" onclick="startProcessing()">Start</button>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" style="display: none;">Processing, please wait...</div>
+    </div>
+
+    <!-- Result Page (hidden initially) -->
+    <div id="resultPage" class="container" style="display: none;">
+        <div class="audio-section">
+            <div class="audio-player">
+                <audio id="audioPlayer" controls>
+                    <source id="audioSource" src="Q4FY24(Titan)Earnings Call Recording.mp3" type="audio/mp3">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <div id="waveform" class="center-waveform"></div>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="raw-text" id="rawText">
+                <h2>Raw Text</h2>
+                <div id="rawTextContent"></div>
+            </div>
+
+            <div class="tabs-section">
+                <div class="tab-buttons">
+                    <button class="tablink" onclick="openTab(event, 'Summary')">Summary</button>
+                    <button class="tablink" onclick="openTab(event, 'QA')">Q&A</button>
+                    <button class="tablink" onclick="openTab(event, 'Chat')">Chat</button>
+                </div>
+
+                <div id="Summary" class="tabcontent">
+                    <h2>Summary</h2>
+                    <div id="summaryControls">
+                        <input type="text" id="customPromptInput" placeholder="Enter a custom prompt for the summary">
+                        <button class="generate-btn" onclick="generateSummary()">Generate Summary</button>
+                    </div>
+                    <div id="summaryContent"></div>
+                </div>
+
+                <div id="QA" class="tabcontent">
+                    <h2>Q&A</h2>
+                    <button id="generateQAButton">Generate Q&A</button>
+                    <div id="qaContent">
+                        <p>Placeholder for Q&A content</p>
+                    </div>
+                </div>
+
+                <div id="Chat" class="tabcontent">
+                    <h2>Chat</h2>
+                    <div id="chatContent">
+                        <div id="chatBox"></div>
+                        <input type="text" id="chatInput" placeholder="Type your message here...">
+                        <button class="send-btn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="t.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
 </body>
 </html>
