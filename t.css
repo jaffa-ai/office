@@ -1,80 +1,406 @@
-/* 
- * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
- * See LICENSE in the project root for license information.
- */
+/* Base styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+}
 
- html,
- body {
-     width: 100%;
-     height: 100%;
-     margin: 0;
-     padding: 0;
- }
- 
- ul {
-     margin: 0;
-     padding: 0;
- }
- 
- .ms-welcome__header {
+.container {
+    width: 100%;
     padding: 20px;
-    padding-bottom: 30px;
-    padding-top: 100px;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-    align-items: center;
- }
+    box-sizing: border-box;
+}
 
- .ms-welcome__main {
-    display: -webkit-flex;
+.file-upload {
     display: flex;
-    -webkit-flex-direction: column;
+    justify-content: right;
+    margin-bottom: 20px;
+}
+
+.upload-btn {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    padding: 20px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.upload-btn:hover {
+    background: linear-gradient(45deg, #2575fc, #6a11cb);
+}
+
+.audio-section {
+    display: flex;
     flex-direction: column;
-    -webkit-flex-wrap: nowrap;
-    flex-wrap: nowrap;
-    -webkit-align-items: center;
     align-items: center;
-    -webkit-flex: 1 0 0;
-    flex: 1 0 0;
+}
+
+.audio-player {
+    margin-bottom: 10px;
+}
+
+.center-waveform {
+    margin: 0 auto;
+    width: 80%;
+    height: 100px;
+}
+
+/* Layout with 30% Raw Text and 70% Tabs */
+.content-wrapper {
+    display: flex;
+    height: calc(100vh - 200px); /* Adjust height based on other sections */
+}
+
+.raw-text {
+    flex-basis: 30%;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fafafa;
+    margin-right: 10px;
+}
+
+#rawTextContent {
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+}
+
+.tabs-section {
+    flex-basis: 70%;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.tablink {
+    background: linear-gradient(45deg, #ff9966, #ff5e62);
+    color: white;
+    border: none;
     padding: 10px 20px;
- }
- 
- .ms-welcome__main > h2 {
-     width: 100%;
-     text-align: center;
- }
- 
- .ms-welcome__features {
-     list-style-type: none;
-     margin-top: 20px;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem {
-     padding-bottom: 20px;
-     display: -webkit-flex;
-     display: flex;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem > .ms-Icon {
-     margin-right: 10px;
- }
- 
- .ms-welcome__action.ms-Button--hero {
-     margin-top: 30px;
- }
- 
-.ms-Button.ms-Button--hero .ms-Button-label {
-  color: #0078d7;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s ease;
 }
 
-.ms-Button.ms-Button--hero:hover .ms-Button-label,
-.ms-Button.ms-Button--hero:focus .ms-Button-label{
-  color: #005a9e;
-  cursor: pointer;
+.tablink:hover {
+    background: linear-gradient(45deg, #ff5e62, #ff9966);
 }
 
-b {
+.tabcontent {
+    display: none;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabcontent h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+#summaryContent {
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 16px;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.send-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.send-btn:hover {
+    background: #45a049;
+}
+
+.tablink.active {
+    background-color: #2575fc;
+}
+/* Styling for the Generate Summary Section */
+#summaryControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#customPromptInput {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.generate-btn {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.generate-btn:hover {
+    background-color: #45a049;
+}
+
+#summaryContent {
+    background-color: #f3f6f5;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.6;
+}
+.timestamp {
+    color: #FF4500; /* Change this to your desired color */
     font-weight: bold;
+    background-color: #FFFF00; /* Optional: Change background color if needed */
+    border-radius: 3px;
+    padding: 2px;
+    text-decoration: underline;
+}
+
+/* Q&A Tab Styles */
+#QA {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Button Styles */
+#generateQAButton {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+#generateQAButton:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Q&A Content Styles */
+#qaContent {
+    margin-top: 20px;
+}
+
+.qa-category {
+    margin-bottom: 20px;
+}
+
+.qa-category h3 {
+    font-size: 18px;
+    color: #333;
+}
+
+.qa-category p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.timestamp {
+    color: red; /* Timestamp color */
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.timestamp:hover {
+    text-decoration: underline;
+}
+
+#loadingSpinner {
+    text-align: center;
+    font-size: 20px;
+    color: #333;
+}
+
+/* Upload Page Styles */
+/* Upload Page Styles */
+
+/* Upload Page Styles */
+#uploadPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ece9e6, #ffffff);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Hide actual file inputs */
+#uploadPage input[type="file"] {
+    display: none;
+}
+
+/* Custom File Upload Labels */
+#uploadPage .custom-file-label {
+    display: block;
+    background-color: #5a67d8;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+#uploadPage .custom-file-label:hover {
+    background-color: #97be92;
+    transform: scale(1.05);
+}
+
+/* Button Container */
+#uploadPage .button-container {
+    display: flex;
+    flex-direction: column; /* Arrange buttons vertically */
+    align-items: center; /* Center buttons horizontally */
+    margin-top: 20px;
+}
+
+/* Upload Button */
+#uploadPage .upload-btn {
+    background-color: #38a169;
+    color: white;
+    padding: 12px 24px;
+    margin-top: 10px; /* Add spacing between buttons */
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+}
+
+#uploadPage .upload-btn:hover {
+    background-color: #2f855a;
+    box-shadow: 0 8px 15px rgba(0, 128, 0, 0.2);
+    transform: scale(1.05);
+}
+
+#uploadPage .upload-btn:active {
+    transform: scale(0.98);
+}
+
+/* Start Button */
+#uploadPage .start-btn {
+    background-color: #4caf50;
+    color: white;
+    padding: 12px 24px;
+    margin-top: 10px; /* Add spacing between buttons */
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+}
+
+#uploadPage .start-btn:hover {
+    background-color: #45a049;
+    box-shadow: 0 8px 15px rgba(0, 128, 0, 0.2);
+    transform: scale(1.05);
+}
+
+#uploadPage .start-btn:active {
+    transform: scale(0.98);
+}
+
+/* Loading Spinner */
+#loadingSpinner {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none; /* Initially hidden */
+}
+
+#loadingSpinner::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    margin-left: 10px;
+    border: 3px solid #4a5568;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Keyframes for Spinner Animation */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error Message */
+#error-message {
+    color: #e53e3e;
+    margin-top: 10px;
+    font-size: 14px;
+    display: none; /* Hidden initially */
+}
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 768px) {
+    #uploadPage {
+        width: 90%;
+        padding: 20px;
+    }
+
+    #uploadPage .custom-file-label, 
+    #uploadPage .upload-btn,
+    #uploadPage .start-btn {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
 }
