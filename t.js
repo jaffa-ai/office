@@ -152,8 +152,8 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('http://127.0.0.1:5000/process', {
-        method: 'POST',
+    fetch('https://flask-app-5ux4.onrender.com/process', {
+        method:
         body: formData
     })
     .then(response => response.json())
@@ -215,7 +215,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('http://127.0.0.1:5000/summarize', {
+    fetch('https://flask-app-5ux4.onrender.com/summarize', {
         method: 'POST',
         body: formData
     })
