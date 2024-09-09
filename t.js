@@ -152,7 +152,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('http://127.0.0.1:5000/process', {
+    fetch('https://audio-transcript-summary-4st9.onrender.com/process', {
         method: 'POST',
         body: formData
     })
@@ -215,7 +215,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('http://127.0.0.1:5000/summarize', {
+    fetch('https://audio-transcript-summary-4st9.onrender.com/summarize', {
         method: 'POST',
         body: formData
     })
