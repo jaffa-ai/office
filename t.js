@@ -320,7 +320,7 @@ function generateQAOneLinerSummary() {
 // Add this function to the Q&A button's click event listener
 document.getElementById('generateQAButton').addEventListener('click', generateQAOneLinerSummary);
 
-function fetchAndDisplayQA() {
+/* function fetchAndDisplayQA() {
     fetch('http://127.0.0.1:5000/performance')
         .then(response => response.json())
         .then(data => {
@@ -352,3 +352,4 @@ function fetchAndDisplayQA() {
             console.error('Error fetching Q&A:', error);
         });
 }
+*/
