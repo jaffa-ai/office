@@ -295,6 +295,30 @@ function clearHighlight(contentId) {
         highlighted.classList.remove('highlight');
     }
 }
+function generateQAOneLinerSummary() {
+    fetch('/qa_one_liner_summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),  // Add any required data here
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Assuming the response has 'one_liner_summary_by_cat'
+        const summary = data.one_liner_summary_by_cat;
+        
+        // Display the one-liner summary in the Q&A tab
+        const qaContent = document.getElementById('qaContent');
+        qaContent.innerHTML = `<p>${summary}</p>`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Add this function to the Q&A button's click event listener
+document.getElementById('generateQAButton').addEventListener('click', generateQAOneLinerSummary);
 
 function fetchAndDisplayQA() {
     fetch('http://127.0.0.1:5000/performance')
