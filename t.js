@@ -153,26 +153,35 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('audio', audioFile);
 
     fetch('https://audio-summarizer-backend-fkd9dgb9eqdagzge.eastus-01.azurewebsites.net/process', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideLoadingSpinner();
-
-        if (data.corrected_text) {
-            displayRawTextWithTimestamps(data.corrected_text);  // Display raw text with clickable timestamps
-            switchToResultPage();  // Switch to the page with audio player and tabs
-        } else if (data.error) {
-            console.error('Error fetching raw text:', data.error);
-            alert('Error processing files.');
+    method: 'POST',
+    body: formData
+})
+.then(response => {
+    return response.json().then(data => {
+        if (!response.ok) {
+            // Server returned an error
+            throw new Error(data.error || 'Unknown error');
         }
-    })
-    .catch(error => {
-        hideLoadingSpinner();
-        console.error('Error:', error);
-        alert('An error occurred while uploading files.');
+        return data;
     });
+})
+.then(data => {
+    hideLoadingSpinner();
+
+    if (data.corrected_text) {
+        displayRawTextWithTimestamps(data.corrected_text);
+        switchToResultPage();
+    } else if (data.error) {
+        console.error('Error fetching raw text:', data.error);
+        alert('Error processing files.');
+    }
+})
+.catch(error => {
+    hideLoadingSpinner();
+    console.error('Error:', error.message);
+    alert(`An error occurred: ${error.message}`);
+});
+
 }
 
 // Function to show the loading spinner
