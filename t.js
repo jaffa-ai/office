@@ -152,7 +152,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('https://audio-summarizer-backend-fkd9dgb9eqdagzge.eastus-01.azurewebsites.net/process', {
+    fetch('https://audio-transcript-summary-backend-cyejhnashkh8aqd0.eastus-01.azurewebsites.net/process', {
     method: 'POST',
     body: formData
 })
@@ -224,7 +224,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('https://audio-summarizer-backend-fkd9dgb9eqdagzge.eastus-01.azurewebsites.net/summarize', {
+    fetch('https://audio-transcript-summary-backend-cyejhnashkh8aqd0.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
         body: formData
     })
@@ -305,7 +305,7 @@ function clearHighlight(contentId) {
     }
 }
 function generateQAOneLinerSummary() {
-    fetch('https://audio-summarizer-backend-fkd9dgb9eqdagzge.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+    fetch('https://audio-transcript-summary-backend-cyejhnashkh8aqd0.eastus-01.azurewebsites.net/qa_one_liner_summary', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -330,7 +330,7 @@ function generateQAOneLinerSummary() {
 document.getElementById('generateQAButton').addEventListener('click', generateQAOneLinerSummary);
 
 /* function fetchAndDisplayQA() {
-    fetch('http://127.0.0.1:5000/performance')
+    fetch('https://audio-transcript-summary-backend-cyejhnashkh8aqd0.eastus-01.azurewebsites.net/performance')
         .then(response => response.json())
         .then(data => {
             console.log('Fetched data:', data); // Debugging statement
