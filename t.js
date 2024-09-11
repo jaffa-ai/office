@@ -152,7 +152,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('https://ads-f9a3c0bhdwf4gcd0.eastus-01.azurewebsites.net/process', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
     method: 'POST',
     body: formData
 })
@@ -224,7 +224,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('https://ads-f9a3c0bhdwf4gcd0.eastus-01.azurewebsites.net/summarize', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//summarize', {
         method: 'POST',
         body: formData
     })
@@ -305,7 +305,7 @@ function clearHighlight(contentId) {
     }
 }
 function generateQAOneLinerSummary() {
-    fetch('https://ads-f9a3c0bhdwf4gcd0.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//qa_one_liner_summary', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
