@@ -152,7 +152,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('https://audio-transcript-summarizer-dmfedjh9h7e7dnhu.eastus-01.azurewebsites.net/process', {
+    fetch('https://audiotranscriptsummary-fkcde6bgfxhjgzg2.eastus-01.azurewebsites.net/process', {
     method: 'POST',
     body: formData
 })
@@ -224,7 +224,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('https://audio-transcript-summarizer-dmfedjh9h7e7dnhu.eastus-01.azurewebsites.net/summarize', {
+    fetch('https://audiotranscriptsummary-fkcde6bgfxhjgzg2.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
         body: formData
     })
@@ -330,7 +330,7 @@ function generateQAOneLinerSummary() {
 document.getElementById('generateQAButton').addEventListener('click', generateQAOneLinerSummary);
 
 /* function fetchAndDisplayQA() {
-    fetch('https://audio-transcript-summary-backend-cyejhnashkh8aqd0.eastus-01.azurewebsites.net/performance')
+    fetch('https://audiotranscriptsummary-fkcde6bgfxhjgzg2.eastus-01.azurewebsites.net/performance')
         .then(response => response.json())
         .then(data => {
             console.log('Fetched data:', data); // Debugging statement
