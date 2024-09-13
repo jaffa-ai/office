@@ -224,7 +224,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//summarize', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
         body: formData
     })
@@ -304,8 +304,9 @@ function clearHighlight(contentId) {
         highlighted.classList.remove('highlight');
     }
 }
+
 function generateQAOneLinerSummary() {
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//qa_one_liner_summary', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -314,17 +315,30 @@ function generateQAOneLinerSummary() {
     })
     .then(response => response.json())
     .then(data => {
-        // Assuming the response has 'one_liner_summary_by_cat'
+        // Check if 'one_liner_summary_by_cat' is an object
         const summary = data.one_liner_summary_by_cat;
-        
+
+        // Check if summary is an object, and convert it to a readable format
+        let summaryContent = '';
+        if (typeof summary === 'object' && summary !== null) {
+            // If it's an object, iterate through its keys and values
+            for (const [category, content] of Object.entries(summary)) {
+                summaryContent += `<p><strong>${category}:</strong> ${content}</p>`;
+            }
+        } else {
+            // If it's not an object, just display it as text
+            summaryContent = `<p>${summary}</p>`;
+        }
+
         // Display the one-liner summary in the Q&A tab
         const qaContent = document.getElementById('qaContent');
-        qaContent.innerHTML = `<p>${summary}</p>`;
+        qaContent.innerHTML = summaryContent;
     })
     .catch(error => {
         console.error('Error:', error);
     });
 }
+
 
 // Add this function to the Q&A button's click event listener
 document.getElementById('generateQAButton').addEventListener('click', generateQAOneLinerSummary);
