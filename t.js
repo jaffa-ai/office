@@ -291,15 +291,45 @@ function generateQAOneLinerSummary() {
     })
     .then(response => response.json())
     .then(data => {
-        const qaByCategory = data.qa_by_category;
+        console.log('Received data:', JSON.stringify(data, null, 2)); // Pretty print the entire received data
+
         let summaryContent = '';
 
-        for (const [category, qaList] of Object.entries(qaByCategory)) {
+        if (typeof data === 'object' && data !== null) {
+            if (data.qa_by_category) {
+                summaryContent = processQAByCategory(data.qa_by_category);
+            } else if (data.formatted_output) {
+                summaryContent = `<div class="category-summary">${data.formatted_output}</div>`;
+            } else {
+                // If neither qa_by_category nor formatted_output exists, try to parse the data as is
+                summaryContent = parseUnknownStructure(data);
+            }
+        } else {
+            console.error('Received data is not an object:', data);
+            summaryContent = '<p>Error: Unexpected data type received from the server.</p>';
+        }
+
+        const qaContent = document.getElementById('qaContent');
+        qaContent.innerHTML = summaryContent;
+
+        addTimestampListeners();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const qaContent = document.getElementById('qaContent');
+        qaContent.innerHTML = `<p>Error: ${error.message}</p>`;
+    });
+}
+
+function processQAByCategory(qaByCategory) {
+    let content = '';
+    for (const [category, qaList] of Object.entries(qaByCategory)) {
+        if (Array.isArray(qaList)) {
             qaList.forEach(item => {
                 const questionTimestamps = formatTimestamps(item.timestamps_questions);
                 const answerTimestamps = formatTimestamps(item.timestamps_answers);
 
-                summaryContent += `
+                content += `
                     <div class="category-summary">
                         <h3>${category}</h3>
                         <p><strong>Question:</strong> ${item.question}</p>
@@ -310,19 +340,25 @@ function generateQAOneLinerSummary() {
                     </div>
                 `;
             });
+        } else {
+            console.error(`qaList for category ${category} is not an array:`, qaList);
         }
+    }
+    return content;
+}
 
-        const qaContent = document.getElementById('qaContent');
-        qaContent.innerHTML = summaryContent;
-
-        // Add click event listeners to timestamps
-        addTimestampListeners();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        const qaContent = document.getElementById('qaContent');
-        qaContent.innerHTML = `<p>Error: ${error.message}</p>`;
-    });
+function parseUnknownStructure(data) {
+    let content = '<div class="category-summary">';
+    for (const [key, value] of Object.entries(data)) {
+        if (typeof value === 'object' && value !== null) {
+            content += `<h3>${key}</h3>`;
+            content += parseUnknownStructure(value); // Recursively parse nested objects
+        } else {
+            content += `<p><strong>${key}:</strong> ${value}</p>`;
+        }
+    }
+    content += '</div>';
+    return content;
 }
 
 function formatTimestamps(timestamps) {
@@ -354,7 +390,6 @@ document.addEventListener('DOMContentLoaded', function() {
         generateQAButton.addEventListener('click', generateQAOneLinerSummary);
     }
 });
-
 // Function to open a tab
 function openTab(evt, tabName) {
     // Get all elements with class="tabcontent" and hide them
