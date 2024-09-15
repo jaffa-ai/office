@@ -1,58 +1,63 @@
-// Event listeners for switching between tabs
-
-// Function to open a tab
-function openTab(evt, tabName) {
-    // Get all elements with class="tabcontent" and hide them
-    const tabcontent = document.getElementsByClassName("tabcontent");
-    for (let i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-
-    // Get all elements with class="tablink" and remove the class "active"
-    const tablinks = document.getElementsByClassName("tablink");
-    for (let i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-    // Show the current tab and add an "active" class to the button that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
-
-// Set the default tab to open
-document.addEventListener('DOMContentLoaded', (event) => {
-    document.querySelector(".tablink").click(); // Opens the first tab by default
-});
-
-
 document.addEventListener('DOMContentLoaded', function() {
     const audioPlayer = document.getElementById('audioPlayer');
     const waveformContainer = document.getElementById('waveform');
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
+    const skipBackward15 = document.getElementById('skipBackward15');
+    const skipBackward30 = document.getElementById('skipBackward30');
+    const skipForward15 = document.getElementById('skipForward15');
+    const skipForward30 = document.getElementById('skipForward30');
 
-    // Initialize WaveSurfer.js
-    const wavesurfer = WaveSurfer.create({
-        container: waveformContainer,
-        waveColor: 'violet',
-        progressColor: 'purple',
-        backend: 'MediaElement',
-        height: 80,
-        barWidth: 2,
-        cursorColor: 'navy',
-        responsive: true,
-        interact: true,
-        hideScrollbar: true,
+    let wavesurfer;
+
+    function initializeWaveSurfer() {
+        if (!waveformContainer) {
+            console.error('Waveform container not found');
+            return;
+        }
+
+        wavesurfer = WaveSurfer.create({
+            container: waveformContainer,
+            waveColor: '#c1bfed',
+            progressColor: '1c2f50',
+            backend: 'MediaElement',
+            height: 80,
+            barWidth: 2,
+            cursorColor: 'navy',
+            responsive: true,
+            interact: true,
+            hideScrollbar: true,
+            mediaControls: true,
+            media: audioPlayer
+        });
+
+        wavesurfer.on('ready', function() {
+            console.log('WaveSurfer is ready');
+        });
+
+        wavesurfer.on('error', function(e) {
+            console.error('WaveSurfer error:', e);
+        });
+    }
+
+    // Initialize WaveSurfer when the audio is loaded
+    audioPlayer.addEventListener('loadedmetadata', initializeWaveSurfer);
+
+    // Skip buttons functionality
+    skipBackward15.addEventListener('click', () => {
+        audioPlayer.currentTime -= 15;
     });
 
-    // Update waveform when audio is loaded
-    audioPlayer.addEventListener('loadeddata', () => {
-        wavesurfer.load(audioPlayer);
+    skipBackward30.addEventListener('click', () => {
+        audioPlayer.currentTime -= 30;
     });
 
-    // Sync play/pause with the audio element controls
-    audioPlayer.addEventListener('play', () => wavesurfer.play());
-    audioPlayer.addEventListener('pause', () => wavesurfer.pause());
+    skipForward15.addEventListener('click', () => {
+        audioPlayer.currentTime += 15;
+    });
+
+    skipForward30.addEventListener('click', () => {
+        audioPlayer.currentTime += 30;
+    });
+
 
     // Listen for timestamp click events to seek the audio
     document.getElementById('rawTextContent').addEventListener('click', function(event) {
@@ -96,28 +101,10 @@ function displayRawTextWithTimestamps(textWithTimestamps) {
     const rawTextContent = document.getElementById('rawTextContent');
     const formattedText = textWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
     rawTextContent.innerHTML = formattedText;
-
 }
 
-// Function to process PDF and audio files
-function processFiles() {
-    const pdfInput = document.getElementById('pdfInput');
-    const audioInput = document.getElementById('audioInput');
-
-    const pdfFile = pdfInput.files[0];
-    const audioFile = audioInput.files[0];
-
-    if (pdfFile && audioFile) {
-        uploadFiles(pdfFile, audioFile);
-    } else {
-        alert('Please upload both an audio file and a PDF file.');
-    }
-}
-
-// Function to upload PDF and audio files
 // Function to process PDF and audio files when the "Start" button is clicked
-// Function to process PDF and audio files when the "Start" button is clicked
-function startProcessing() {
+window.startProcessing = function() {
     const pdfInput = document.getElementById('pdfInput');
     const audioInput = document.getElementById('audioInput');
 
@@ -132,7 +119,6 @@ function startProcessing() {
         const reader = new FileReader();
         reader.onload = function(event) {
             // Set the audio source to the uploaded file
-            const audioPlayer = document.getElementById('audioPlayer');
             const audioSource = document.getElementById('audioSource');
             audioSource.src = event.target.result;
             audioPlayer.load(); // Reload audio player with new source
@@ -152,36 +138,35 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
-    method: 'POST',
-    body: formData
-})
-.then(response => {
-    return response.json().then(data => {
-        if (!response.ok) {
-            // Server returned an error
-            throw new Error(data.error || 'Unknown error');
+    fetch('http://127.0.0.1:5000/process', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        return response.json().then(data => {
+            if (!response.ok) {
+                // Server returned an error
+                throw new Error(data.error || 'Unknown error');
+            }
+            return data;
+        });
+    })
+    .then(data => {
+        hideLoadingSpinner();
+
+        if (data.corrected_text) {
+            displayRawTextWithTimestamps(data.corrected_text);
+            switchToResultPage();
+        } else if (data.error) {
+            console.error('Error fetching raw text:', data.error);
+            alert('Error processing files.');
         }
-        return data;
+    })
+    .catch(error => {
+        hideLoadingSpinner();
+        console.error('Error:', error.message);
+        alert(`An error occurred: ${error.message}`);
     });
-})
-.then(data => {
-    hideLoadingSpinner();
-
-    if (data.corrected_text) {
-        displayRawTextWithTimestamps(data.corrected_text);
-        switchToResultPage();
-    } else if (data.error) {
-        console.error('Error fetching raw text:', data.error);
-        alert('Error processing files.');
-    }
-})
-.catch(error => {
-    hideLoadingSpinner();
-    console.error('Error:', error.message);
-    alert(`An error occurred: ${error.message}`);
-});
-
 }
 
 // Function to show the loading spinner
@@ -200,18 +185,10 @@ function switchToResultPage() {
     document.getElementById('resultPage').style.display = 'block';
 }
 
-// Ensure that when the files are uploaded and the user clicks "Start", the first tab is opened and the player is initialized correctly
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the upload process
-    document.getElementById('startBtn').addEventListener('click', startProcessing);
-});
-
-
-
 // Function to request a summary from the Flask app
 function generateSummary() {
     const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
-    const customPromptInput = document.getElementById('customPromptInput'); // Optional input for custom prompt
+    const customPromptInput = document.getElementById('customPromptInput');
     const customPrompt = customPromptInput ? customPromptInput.value.trim() : '';
 
     if (!rawTextContent) {
@@ -224,14 +201,14 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
+    fetch('http://127.0.0.1:5000/summarize', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.summary) {
-            displaySummaryWithTimestamps(data.summary); // Display summary with clickable timestamps
+            displaySummaryWithTimestamps(data.summary);
         } else if (data.error) {
             console.error('Error fetching summary:', data.error);
         }
@@ -304,75 +281,225 @@ function clearHighlight(contentId) {
         highlighted.classList.remove('highlight');
     }
 }
-
 function generateQAOneLinerSummary() {
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+    fetch('http://127.0.0.1:5000/qa_one_liner_summary', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({}),  // Add any required data here
+        body: JSON.stringify({}),
     })
     .then(response => response.json())
     .then(data => {
-        // Check if 'one_liner_summary_by_cat' is an object
-        const summary = data.one_liner_summary_by_cat;
-
-        // Check if summary is an object, and convert it to a readable format
+        const qaByCategory = data.qa_by_category;
         let summaryContent = '';
-        if (typeof summary === 'object' && summary !== null) {
-            // If it's an object, iterate through its keys and values
-            for (const [category, content] of Object.entries(summary)) {
-                summaryContent += `<p><strong>${category}:</strong> ${content}</p>`;
-            }
-        } else {
-            // If it's not an object, just display it as text
-            summaryContent = `<p>${summary}</p>`;
+
+        for (const [category, qaList] of Object.entries(qaByCategory)) {
+            qaList.forEach(item => {
+                const questionTimestamps = formatTimestamps(item.timestamps_questions);
+                const answerTimestamps = formatTimestamps(item.timestamps_answers);
+
+                summaryContent += `
+                    <div class="category-summary">
+                        <h3>${category}</h3>
+                        <p><strong>Question:</strong> ${item.question}</p>
+                        <p><strong>Question Timestamps:</strong> ${questionTimestamps}</p>
+                        <p><strong>Context:</strong> ${item.context}</p>
+                        <p><strong>Answer:</strong> ${item.answer}</p>
+                        <p><strong>Answer Timestamps:</strong> ${answerTimestamps}</p>
+                    </div>
+                `;
+            });
         }
 
-        // Display the one-liner summary in the Q&A tab
         const qaContent = document.getElementById('qaContent');
         qaContent.innerHTML = summaryContent;
+
+        // Add click event listeners to timestamps
+        addTimestampListeners();
     })
     .catch(error => {
         console.error('Error:', error);
+        const qaContent = document.getElementById('qaContent');
+        qaContent.innerHTML = `<p>Error: ${error.message}</p>`;
     });
 }
 
-
-// Add this function to the Q&A button's click event listener
-document.getElementById('generateQAButton').addEventListener('click', generateQAOneLinerSummary);
-
-/* function fetchAndDisplayQA() {
-    fetch('https://audiotranscriptsummary-fkcde6bgfxhjgzg2.eastus-01.azurewebsites.net/performance')
-        .then(response => response.json())
-        .then(data => {
-            console.log('Fetched data:', data); // Debugging statement
-            let htmlContent = '';
-            for (const category in data) {
-                htmlContent += `<div class="qa-category"><h3>${category}</h3>`;
-                for (const question in data[category]) {
-                    const answer = data[category][question];
-                    htmlContent += `<p>${question} <span class="timestamp" data-timestamp="[[${extractTimestamp(question)}]]">[[${extractTimestamp(question)}]]</span>: ${answer}</p>`;
-                }
-                htmlContent += '</div>';
-            }
-            qaContent.innerHTML = htmlContent;
-
-            // Add event listeners to timestamps in Q&A
-            qaContent.querySelectorAll('.timestamp').forEach(element => {
-                element.addEventListener('click', function() {
-                    const timestamp = element.getAttribute('data-timestamp');
-                    const seconds = parseTimestampToSeconds(timestamp);
-                    const audioPlayer = document.getElementById('audioPlayer');
-                    audioPlayer.currentTime = seconds;
-                    audioPlayer.play();  // Start playing from the clicked timestamp
-                    highlightTimestampInRawText(timestamp); // Highlight in raw text
-                });
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching Q&A:', error);
-        });
+function formatTimestamps(timestamps) {
+    if (!timestamps) return '';
+    const timestampArray = timestamps.match(/\[\d{2}:\d{2}\]/g) || [];
+    return timestampArray.map(ts => `<span class="timestamp" data-timestamp="${ts}">${ts}</span>`).join(' ');
 }
-*/
+
+function addTimestampListeners() {
+    document.querySelectorAll('.timestamp').forEach(timestamp => {
+        timestamp.addEventListener('click', function() {
+            const time = parseTimestampToSeconds(this.getAttribute('data-timestamp'));
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.currentTime = time;
+            audioPlayer.play();
+        });
+    });
+}
+
+function parseTimestampToSeconds(timestamp) {
+    const parts = timestamp.slice(1, -1).split(':');
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+}
+
+// Add this to your existing event listener setup
+document.addEventListener('DOMContentLoaded', function() {
+    const generateQAButton = document.getElementById('generateQAButton');
+    if (generateQAButton) {
+        generateQAButton.addEventListener('click', generateQAOneLinerSummary);
+    }
+});
+
+// Function to open a tab
+function openTab(evt, tabName) {
+    // Get all elements with class="tabcontent" and hide them
+    const tabcontent = document.getElementsByClassName("tabcontent");
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablink" and remove the class "active"
+    const tablinks = document.getElementsByClassName("tablink");
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+// Set the default tab to open
+document.addEventListener('DOMContentLoaded', (event) => {
+    document.querySelector(".tablink").click(); // Opens the first tab by default
+});
+
+
+let correctedTextProcessed = false;
+
+function processCorrectedText(correctedText) {
+    displayMessage("Processing text...", 'system');
+    fetch('http://127.0.0.1:5000/process-corrected-text', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            corrected_text: correctedText
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Corrected text processed and stored successfully') {
+            correctedTextProcessed = true;
+            console.log('Corrected text processed successfully');
+            displayMessage("Text processed successfully. You can now ask questions.", 'system');
+        } else {
+            console.error('Error processing corrected text:', data.error);
+            displayMessage("Error processing text. Please try again.", 'system');
+        }
+    })
+    .catch(error => {
+        console.error('Error processing corrected text:', error);
+        displayMessage("Error processing text. Please check your connection and try again.", 'system');
+    });
+}
+
+function askQuestion(question) {
+    displayMessage('system');
+    fetch('http://127.0.0.1:5000/ask-question', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question: question
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.response) {
+            displayResponse(data.response);
+        } else if (data.error) {
+            console.error('Error from server:', data.error);
+            displayMessage(`Error: ${data.error}`, 'system');
+        } else {
+            console.error('Unexpected response format:', data);
+            displayMessage("Received an unexpected response from the server.", 'system');
+        }
+    })
+    .catch(error => {
+        console.error('Error details:', error);
+        displayMessage(`An error occurred: ${error.message}. Please try again.`, 'system');
+    });
+}
+
+function sendMessage() {
+    const chatInput = document.getElementById('chatInput');
+    const message = chatInput.value.trim();
+    
+    if (message === '') {
+        return;
+    }
+    
+    displayMessage(message, 'user');
+    
+    if (!correctedTextProcessed) {
+        processCorrectedText(message);
+    } else {
+        askQuestion(message);
+    }
+    
+    chatInput.value = '';
+}
+
+function displayMessage(message, sender) {
+    const chatBox = document.getElementById('chatBox');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', sender);
+    messageElement.innerText = message;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function displayResponse(response) {
+    displayMessage(response, 'ai');
+}
+
+// No need for DOMContentLoaded event listener since you're using inline onclick
+
+// You may want to add this event listener for pressing Enter in the input field
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+function copyText(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Text copied to clipboard');
+    }).catch(err => {
+        alert('Failed to copy text: ', err);
+    });
+}
+
+// Download text as .txt file
+function downloadText(elementId, filename) {
+    const text = document.getElementById(elementId).innerText;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}

@@ -12,24 +12,31 @@ body {
     box-sizing: border-box;
 }
 
+/* Upload Page Specific Styles */
+#uploadPage {
+    text-align: center; /* Center-align all text within the upload page */
+}
+
 .file-upload {
     display: flex;
-    justify-content: right;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center;    /* Center elements horizontally */
     margin-bottom: 20px;
 }
 
 .upload-btn {
-    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    background: linear-gradient(45deg, #46516a, #1c2f50);
     color: white;
     border: none;
-    padding: 20px 20px;
+    padding: 15px 30px;      /* Adjust padding for a more balanced button */
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.3s ease;
+    font-size: 1em;          /* Adjust font size for better readability */
 }
 
 .upload-btn:hover {
-    background: linear-gradient(45deg, #2575fc, #6a11cb);
+    background: linear-gradient(45deg, #081a34, #c1bfed);
 }
 
 .audio-section {
@@ -42,12 +49,125 @@ body {
     margin-bottom: 10px;
 }
 
-.center-waveform {
-    margin: 0 auto;
-    width: 80%;
-    height: 100px;
+#uploadPage h1, #uploadPage h2 {
+    margin: 0;               /* Remove default margins */
 }
 
+#uploadPage h1 {
+    font-size: 2.5em;        /* Adjust the size for the h1 heading */
+    color: #333;             /* Darker text color for readability */
+    margin-bottom: 0.2em;    /* Space between h1 and h2 */
+    font-weight: bold;       /* Make the h1 bold */
+}
+
+#uploadPage h2 {
+    font-size: 1.5em;        /* Slightly smaller for h2 */
+    color: #666;             /* Lighter color for h2 */
+    font-weight: normal;     /* Normal font weight for h2 */
+    margin-bottom: 1em;      /* Space below h2 for other content */
+}
+
+
+
+
+.center-waveform {
+    width: 100%;  
+    height: 100px; 
+    background: #f0f0f0;   
+    position: relative; 
+}
+
+/* Adjust the audio player styles if needed */
+
+.audio-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.audio-player {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-waveform {
+    width: 100%;
+    height: 128px; /* Increased height for better visibility */
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* WaveSurfer overrides */
+.wavesurfer-region {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.wavesurfer-handle {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    width: 4px !important;
+}
+
+.wavesurfer-playhead {
+    width: 2px !important;
+    background-color: #333 !important;
+}
+
+/* Audio controls styling */
+.audio-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.audio-controls button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.audio-controls button:hover {
+    background-color: #45a049;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .center-waveform {
+        height: 80px;
+    }
+
+    .audio-controls button {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+
+
+.audio-player {
+    margin-bottom: 10px;
+    width: 100%; /* Full width for better layout */
+} 
+
+/* Ensure buttons are styled consistently */
+.button-container {
+    display: flex;
+    flex-direction: column; /* Arrange buttons vertically */
+    align-items: center; /* Center buttons horizontally */
+}
 /* Layout with 30% Raw Text and 70% Tabs */
 .content-wrapper {
     display: flex;
@@ -88,7 +208,7 @@ body {
 }
 
 .tablink {
-    background: linear-gradient(45deg, #ff9966, #ff5e62);
+    background: linear-gradient(45deg, #46516a, #1c2f50);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -98,7 +218,7 @@ body {
 }
 
 .tablink:hover {
-    background: linear-gradient(45deg, #ff5e62, #ff9966);
+    background: linear-gradient(45deg, #081a34, #c1bfed);
 }
 
 .tabcontent {
@@ -139,7 +259,7 @@ body {
 }
 
 .tablink.active {
-    background-color: #2575fc;
+    background-color: #1c2f50;
 }
 /* Styling for the Generate Summary Section */
 #summaryControls {
@@ -160,7 +280,7 @@ body {
 
 .generate-btn {
     padding: 10px 20px;
-    background-color: #4CAF50;
+    background-color: #1c2f50;
     color: white;
     border: none;
     border-radius: 5px;
@@ -171,6 +291,12 @@ body {
 
 .generate-btn:hover {
     background-color: #45a049;
+}
+
+.center-waveform {
+    width: 100%; /* Full width of the container */
+    height: 100px; /* Height of the waveform */
+    background: #f0f0f0; /* Light background to see if it's rendering */
 }
 
 #summaryContent {
@@ -186,9 +312,9 @@ body {
     line-height: 1.6;
 }
 .timestamp {
-    color: #FF4500; /* Change this to your desired color */
-    font-weight: bold;
-    background-color: #FFFF00; /* Optional: Change background color if needed */
+    color: rgb(255, 0, 81); /* Set the color to blue ink */
+    font-size: 12px; /* Set the desired smaller font size */
+    font-weight: normal; /* Remove bold */
     border-radius: 3px;
     padding: 2px;
     text-decoration: underline;
@@ -204,7 +330,7 @@ body {
 
 /* Button Styles */
 #generateQAButton {
-    background-color: #007bff; /* Blue button */
+    background-color: #1c2f50; /* Blue button */
     color: white;
     border: none;
     border-radius: 5px;
@@ -215,7 +341,7 @@ body {
 }
 
 #generateQAButton:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: #1c2f50; /* Darker blue on hover */
 }
 
 /* Q&A Content Styles */
@@ -238,7 +364,7 @@ body {
 }
 
 .timestamp {
-    color: red; /* Timestamp color */
+    color: rgb(188, 148, 109); /* Timestamp color */
     cursor: pointer;
     font-weight: bold;
 }
@@ -281,7 +407,7 @@ body {
 /* Custom File Upload Labels */
 #uploadPage .custom-file-label {
     display: block;
-    background-color: #5a67d8;
+    background-color: #080c37; 
     color: white;
     padding: 10px 20px;
     margin: 10px;
@@ -404,3 +530,282 @@ body {
         padding: 10px 20px;
     }
 }
+
+#waveform {
+    height: 80px;
+    width: 100%;
+}
+
+/* Base styles for all buttons */
+/* Base styles for all buttons */
+
+button {
+    background-color: #c1bfed;
+    border-radius: 3px;
+    padding: 5px 10px;
+    border: none;
+    margin: 0 2px;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
+}
+
+button:hover {
+    background-color: #1c2f50;
+}
+
+button i {
+    font-size: 20px;
+    color: #e2dddd;
+}
+
+/* Custom button style */
+.button {
+    all: unset;
+    width: 100px;
+    height: 30px;
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    position: relative;
+    color: #f0f0f0;
+    cursor: pointer;
+    z-index: 1;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.button::after, .button-86::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: -99999;
+    transition: all .4s;
+}
+
+.button::before {
+    transform: translate(0%, 0%);
+    width: 100%;
+    height: 100%;
+    background: #28282d;
+    border-radius: 10px;
+}
+
+.button::after {
+    transform: translate(10px, 10px);
+    width: 35px;
+    height: 35px;
+    background: #1c2f50;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 50px;
+}
+
+.button:hover::before {
+    transform: translate(5%, 20%);
+    width: 110%;
+    height: 110%;
+}
+
+.button:hover::after {
+    border-radius: 10px;
+    transform: translate(0, 0);
+    width: 100%;
+    height: 100%;
+}
+
+.button:active::after {
+    transition: 0s;
+    transform: translate(0, 5%);
+}
+
+#Chat {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Chat Header */
+/* Uncomment this if you need a header
+h2 {
+    background-color: #4a90e2;
+    color: white;
+    padding: 20px;
+    margin: 0;
+    text-align: center;
+    font-size: 24px;
+}
+*/
+
+/* Chat Content */
+#chatContent {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 60px); /* Adjust height to accommodate new input area size */
+}
+
+/* Chat Box */
+#chatBox {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Message Styles */
+.message {
+    max-width: 80%;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    animation: fadeIn 0.5s;
+}
+
+.user {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.ai, .system {
+    background-color: #f0f0f0;
+    align-self: flex-start;
+}
+
+/* Input Area */
+#chatInput {
+    flex: 0 0 50px; /* Set a fixed height */
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    background-color: #f0f2f5;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
+
+.send-btn {
+    background-color: #1c2f50;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.send-btn:hover {
+    background-color: #3e4c5e;
+}
+
+/* Input Container */
+#chatContent > div:last-child {
+    display: flex;
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid #e0e0e0;
+    align-items: center; /* Vertically center the input and button */
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar Styles */
+#chatBox::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chatBox::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#chatBox::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+#chatBox::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    #Chat {
+        height: 100%;
+        width: 100%;
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+}
+
+/* Header with Logo */
+.header {
+    position: absolute; /* Position it at the top */
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width to align logo to the left */
+    background-color: #ffffff; /* Background color */
+    padding: 10px 20px; /* Padding around the logo */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.logo {
+    font-size: 24px; /* Size of the logo text */
+    font-weight: bold; /* Make the text bold */
+    background: linear-gradient(45deg, #46516a, #1c2f50); /* Linear gradient color */
+    -webkit-background-clip: text; /* Clip background to text */
+    -webkit-text-fill-color: transparent; /* Make text color transparent to show gradient */
+    color: transparent; /* Ensure fallback color */
+}
+
+.category-summary {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.category-summary h3 {
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.category-summary h4 {
+    color: #28a745;
+    margin-top: 15px;
+}
+
+.timestamp {
+    display: inline-block;
+    padding: 2px 5px;
+    margin: 2px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.timestamp:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+
+

@@ -10,6 +10,8 @@
     <!-- Upload Page -->
     <div id="uploadPage" class="container">
         <div class="file-upload">
+            <h1>Audio Transcript Summarizer</h1>
+            <h2>JAFFA.ai</h2>
             <label for="pdfInput" class="custom-file-label">Upload PDF</label>
             <input type="file" id="pdfInput" accept=".pdf">
             
@@ -25,20 +27,37 @@
 
     <!-- Result Page (hidden initially) -->
     <div id="resultPage" class="container" style="display: none;">
+        <!-- Header with Logo -->
+        <header class="header">
+            <div class="logo">JAFFA.ai</div>
+        </header>
+        
         <div class="audio-section">
             <div class="audio-player">
-                <audio id="audioPlayer" controls>
+                <!-- Backward and forward skip buttons -->
+                <button id="skipBackward15">-15s</button>
+                <button id="skipBackward30">-30s</button>
+                
+                <!-- Custom audio player with waveform -->
+                <audio id="audioPlayer">
                     <source id="audioSource" src="Q4FY24(Titan)Earnings Call Recording.mp3" type="audio/mp3">
                     Your browser does not support the audio element.
                 </audio>
+                <div id="waveform" class="center-waveform"></div>
+                
+                <!-- Forward skip buttons -->
+                <button id="skipForward15">+15s</button>
+                <button id="skipForward30">+30s</button>
             </div>
-            <div id="waveform" class="center-waveform"></div>
         </div>
 
         <div class="content-wrapper">
+            <!-- Raw Text Section -->
             <div class="raw-text" id="rawText">
                 <h2>Raw Text</h2>
-                <div id="rawTextContent"></div>
+                <div id="rawTextContent">This is the raw transcript text...</div>
+                <button onclick="copyText('rawTextContent')">Copy Raw Text</button>
+                <button onclick="downloadText('rawTextContent', 'rawtext.txt')">Download Raw Text</button>
             </div>
 
             <div class="tabs-section">
@@ -48,6 +67,7 @@
                     <button class="tablink" onclick="openTab(event, 'Chat')">Chat</button>
                 </div>
 
+                <!-- Summary Section -->
                 <div id="Summary" class="tabcontent">
                     <h2>Summary</h2>
                     <div id="summaryControls">
@@ -55,23 +75,30 @@
                         <button class="generate-btn" onclick="generateSummary()">Generate Summary</button>
                     </div>
                     <div id="summaryContent"></div>
+                    <button onclick="copyText('summaryContent')">Copy Summary</button>
+                    <button onclick="downloadText('summaryContent', 'summary.txt')">Download Summary</button>
                 </div>
 
+                <!-- Q&A Section -->
                 <div id="QA" class="tabcontent">
                     <h2>Q&A</h2>
                     <button id="generateQAButton">Generate Q&A</button>
-                    <div id="qaContent">
-                        <p>Placeholder for Q&A content</p>
-                    </div>
+                    <div id="qaContent"></div>
+                    <button onclick="copyText('qaContent')">Copy Q&A</button>
+                    <button onclick="downloadText('qaContent', 'qa.txt')">Download Q&A</button>
                 </div>
 
+                <!-- Chat Section -->
                 <div id="Chat" class="tabcontent">
                     <h2>Chat</h2>
+                    <h3>Hi there! I can answer any question related to transcript</h3>
                     <div id="chatContent">
                         <div id="chatBox"></div>
-                        <input type="text" id="chatInput" placeholder="Type your message here...">
+                        <input type="text" id="chatInput" placeholder="Ask a question...">
                         <button class="send-btn" onclick="sendMessage()">Send</button>
                     </div>
+                    <button onclick="copyText('chatBox')">Copy Chat</button>
+                    <button onclick="downloadText('chatBox', 'chat.txt')">Download Chat</button>
                 </div>
             </div>
         </div>
@@ -79,5 +106,7 @@
 
     <script src="t.js"></script>
     <script src="https://unpkg.com/wavesurfer.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+
 </body>
 </html>
