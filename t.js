@@ -282,12 +282,20 @@ function clearHighlight(contentId) {
     }
 }
 function generateQAOneLinerSummary() {
+    const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
+    
+    if (!rawTextContent) {
+        alert('No raw text available to summarize.');
+        return;
+    }
+
+    // Prepare the form data to send in the request
+    const formData = new FormData();
+    formData.append('text', rawTextContent); // Append the raw text content
+
     fetch('http://127.0.0.1:5000/qa_one_liner_summary', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
+        body: formData, // Send the formData in the request body
     })
     .then(response => response.json())
     .then(data => {
@@ -296,12 +304,10 @@ function generateQAOneLinerSummary() {
         let summaryContent = '';
 
         if (typeof data === 'object' && data !== null) {
-            if (data.qa_by_category) {
-                summaryContent = processQAByCategory(data.qa_by_category);
-            } else if (data.formatted_output) {
-                summaryContent = `<div class="category-summary">${data.formatted_output}</div>`;
+            if (data.final_qa_list) {
+                summaryContent = processQAByCategory(data.final_qa_list);
             } else {
-                // If neither qa_by_category nor formatted_output exists, try to parse the data as is
+                // If final_qa_list doesn't exist, try to parse the data as is
                 summaryContent = parseUnknownStructure(data);
             }
         } else {
@@ -312,7 +318,7 @@ function generateQAOneLinerSummary() {
         const qaContent = document.getElementById('qaContent');
         qaContent.innerHTML = summaryContent;
 
-        addTimestampListeners();
+        addTimestampListeners(); // Ensure to add listeners after content is set
     })
     .catch(error => {
         console.error('Error:', error);
@@ -321,9 +327,11 @@ function generateQAOneLinerSummary() {
     });
 }
 
-function processQAByCategory(qaByCategory) {
+function processQAByCategory(finalQAList) {
     let content = '';
-    for (const [category, qaList] of Object.entries(qaByCategory)) {
+    for (const [category, data] of Object.entries(finalQAList)) {
+        const qaList = data.qa_pairs;
+        
         if (Array.isArray(qaList)) {
             qaList.forEach(item => {
                 const questionTimestamps = formatTimestamps(item.timestamps_questions);
@@ -372,8 +380,12 @@ function addTimestampListeners() {
         timestamp.addEventListener('click', function() {
             const time = parseTimestampToSeconds(this.getAttribute('data-timestamp'));
             const audioPlayer = document.getElementById('audioPlayer');
-            audioPlayer.currentTime = time;
-            audioPlayer.play();
+            if (audioPlayer) {
+                audioPlayer.currentTime = time; // Set audio to the time of the clicked timestamp
+                audioPlayer.play(); // Start playing the audio
+            } else {
+                console.error('Audio player not found.');
+            }
         });
     });
 }
@@ -390,6 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
         generateQAButton.addEventListener('click', generateQAOneLinerSummary);
     }
 });
+
 // Function to open a tab
 function openTab(evt, tabName) {
     // Get all elements with class="tabcontent" and hide them
