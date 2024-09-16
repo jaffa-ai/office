@@ -138,7 +138,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//process', {
         method: 'POST',
         body: formData
     })
@@ -201,7 +201,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//summarize', {
         method: 'POST',
         body: formData
     })
@@ -293,7 +293,7 @@ function generateQAOneLinerSummary() {
     const formData = new FormData();
     formData.append('text', rawTextContent); // Append the raw text content
 
-    fetch('audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//qa_one_liner_summary', {
         method: 'POST',
         body: formData, // Send the formData in the request body
     })
@@ -441,7 +441,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -469,7 +469,7 @@ function processCorrectedText(correctedText) {
 
 function askQuestion(question) {
     displayMessage('system');
-    fetch('audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net//ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
