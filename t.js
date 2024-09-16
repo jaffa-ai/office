@@ -138,7 +138,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
+    fetch('http://127.0.0.1:5000/process', {
         method: 'POST',
         body: formData
     })
@@ -201,7 +201,7 @@ function generateSummary() {
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
+    fetch('http://127.0.0.1:5000/summarize', {
         method: 'POST',
         body: formData
     })
@@ -283,7 +283,7 @@ function clearHighlight(contentId) {
 }
 function generateQAOneLinerSummary() {
     const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
-    
+
     if (!rawTextContent) {
         alert('No raw text available to summarize.');
         return;
@@ -293,7 +293,7 @@ function generateQAOneLinerSummary() {
     const formData = new FormData();
     formData.append('text', rawTextContent); // Append the raw text content
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+    fetch('http://127.0.0.1:5000/qa_one_liner_summary', {
         method: 'POST',
         body: formData, // Send the formData in the request body
     })
@@ -303,22 +303,20 @@ function generateQAOneLinerSummary() {
 
         let summaryContent = '';
 
-        if (typeof data === 'object' && data !== null) {
-            if (data.final_qa_list) {
-                summaryContent = processQAByCategory(data.final_qa_list);
-            } else {
-                // If final_qa_list doesn't exist, try to parse the data as is
-                summaryContent = parseUnknownStructure(data);
-            }
+        if (data && data.one_liner_summary_by_cat) {
+            // Process the new response structure
+            summaryContent = processQAByCategory(data.one_liner_summary_by_cat);
         } else {
-            console.error('Received data is not an object:', data);
-            summaryContent = '<p>Error: Unexpected data type received from the server.</p>';
+            // Handle unknown or error cases
+            console.error('Received data does not match expected structure:', data);
+            summaryContent = '<p>Error: Unexpected data structure received.</p>';
         }
 
         const qaContent = document.getElementById('qaContent');
         qaContent.innerHTML = summaryContent;
 
         addTimestampListeners(); // Ensure to add listeners after content is set
+        addDownloadCheckboxListeners(); // Add download checkbox listeners
     })
     .catch(error => {
         console.error('Error:', error);
@@ -327,19 +325,27 @@ function generateQAOneLinerSummary() {
     });
 }
 
-function processQAByCategory(finalQAList) {
+function processQAByCategory(oneLinerSummaryByCat) {
     let content = '';
-    for (const [category, data] of Object.entries(finalQAList)) {
+    for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
         const qaList = data.qa_pairs;
+        const oneLineSummary = data.one_line_summary || 'No summary available';
         
+        // Add category header and checkbox for download
+        content += `
+            <div class="category-summary">
+                <input type="checkbox" class="category-checkbox" data-category="${category}">
+                <h3>${category}</h3>
+                <p><strong>One-Line Summary:</strong> ${oneLineSummary}</p>
+        `;
+
         if (Array.isArray(qaList)) {
             qaList.forEach(item => {
                 const questionTimestamps = formatTimestamps(item.timestamps_questions);
                 const answerTimestamps = formatTimestamps(item.timestamps_answers);
 
                 content += `
-                    <div class="category-summary">
-                        <h3>${category}</h3>
+                    <div class="qa-item">
                         <p><strong>Question:</strong> ${item.question}</p>
                         <p><strong>Question Timestamps:</strong> ${questionTimestamps}</p>
                         <p><strong>Context:</strong> ${item.context}</p>
@@ -351,57 +357,60 @@ function processQAByCategory(finalQAList) {
         } else {
             console.error(`qaList for category ${category} is not an array:`, qaList);
         }
+
+        content += '</div>'; // Close category-summary div
     }
     return content;
 }
 
-function parseUnknownStructure(data) {
-    let content = '<div class="category-summary">';
-    for (const [key, value] of Object.entries(data)) {
-        if (typeof value === 'object' && value !== null) {
-            content += `<h3>${key}</h3>`;
-            content += parseUnknownStructure(value); // Recursively parse nested objects
-        } else {
-            content += `<p><strong>${key}:</strong> ${value}</p>`;
-        }
-    }
-    content += '</div>';
-    return content;
-}
-
+// Function to format timestamps and add click listeners for audio
 function formatTimestamps(timestamps) {
-    if (!timestamps) return '';
-    const timestampArray = timestamps.match(/\[\d{2}:\d{2}\]/g) || [];
-    return timestampArray.map(ts => `<span class="timestamp" data-timestamp="${ts}">${ts}</span>`).join(' ');
+    const timestampArray = timestamps.replace(/[\[\]]/g, '').split(',');
+    return timestampArray.map(ts => `
+        <span class="timestamp" data-timestamp="${ts.trim()}">${ts.trim()}</span>
+    `).join(', ');
 }
 
+// Add listeners for the timestamps to control audio playback
 function addTimestampListeners() {
-    document.querySelectorAll('.timestamp').forEach(timestamp => {
-        timestamp.addEventListener('click', function() {
-            const time = parseTimestampToSeconds(this.getAttribute('data-timestamp'));
+    document.querySelectorAll('.timestamp').forEach(el => {
+        el.addEventListener('click', function() {
+            const timestamp = parseTime(this.dataset.timestamp);
             const audioPlayer = document.getElementById('audioPlayer');
             if (audioPlayer) {
-                audioPlayer.currentTime = time; // Set audio to the time of the clicked timestamp
-                audioPlayer.play(); // Start playing the audio
-            } else {
-                console.error('Audio player not found.');
+                audioPlayer.currentTime = timestamp;
+                audioPlayer.play();
             }
         });
     });
 }
 
-function parseTimestampToSeconds(timestamp) {
-    const parts = timestamp.slice(1, -1).split(':');
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+// Convert timestamp format [MM:SS] to seconds
+function parseTime(timestamp) {
+    const parts = timestamp.split(':');
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    return minutes * 60 + seconds;
 }
 
-// Add this to your existing event listener setup
+// Function to handle checkboxes for category download
+function addDownloadCheckboxListeners() {
+    document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const selectedCategory = this.dataset.category;
+            if (this.checked) {
+                console.log(`Selected category for download: ${selectedCategory}`);
+                // You can add logic here to trigger download of selected category
+            }
+        });
+    });
+}
 document.addEventListener('DOMContentLoaded', function() {
     const generateQAButton = document.getElementById('generateQAButton');
     if (generateQAButton) {
         generateQAButton.addEventListener('click', generateQAOneLinerSummary);
     }
-});
+}); 
 
 // Function to open a tab
 function openTab(evt, tabName) {
@@ -432,7 +441,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
+    fetch('http://127.0.0.1:5000/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -460,7 +469,7 @@ function processCorrectedText(correctedText) {
 
 function askQuestion(question) {
     displayMessage('system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
+    fetch('http://127.0.0.1:5000/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
