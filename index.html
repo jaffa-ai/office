@@ -74,21 +74,28 @@
                 <div id="Summary" class="tabcontent">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h2>Summary</h2>
-                        <!-- Button to show the default prompt, positioned to the right of the "Summary" heading -->
                         <button id="showDefaultPromptBtn" onclick="toggleDefaultPrompt()">Instructions</button>
                     </div>
-                
+                    
                     <!-- Container to display or customize the default prompt -->
                     <div id="defaultPromptContainer" style="display:none;">
                         <div id="defaultPromptDisplay"></div>
                         <button id="customizeBtn" onclick="enableCustomization()">Customize</button>
                     </div>
-                
+                    
                     <!-- Hidden input for editing the prompt, shown when user clicks Customize -->
                     <div id="customPromptContainer" style="display:none;">
                         <textarea id="customPromptInput" rows="4" cols="50"></textarea>
                         <button id="saveBtn" onclick="saveCustomPrompt()">Save</button>
                         <button id="cancelBtn" onclick="cancelCustomization()">Cancel</button>
+                    </div>
+            
+                    <!-- New section for few-shot examples -->
+                    <div>
+                        <button onclick="toggleFewShots()">Few-Shot Examples</button>
+                        <div id="fewShotsContainer" style="display:none;">
+                            <textarea id="fewShotsInput" rows="4" cols="50" placeholder="Enter few-shot examples here..."></textarea>
+                        </div>
                     </div>
                 
                     <div id="summaryControls">
