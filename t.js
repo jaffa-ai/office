@@ -369,16 +369,29 @@ function processSummaryByCategory(oneLinerSummaryByCat) {
     let content = '';
     for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
         const oneLineSummary = data.one_line_summary || 'No summary available';
-
-        // Add category header and one-liner summary
+        
+        // Split the one-liner summary into points
+        const points = oneLineSummary.split('-').filter(point => point.trim() !== '');
+        
+        // Add category header
         content += `
             <div class="category-summary">
                 <input type="checkbox" class="category-checkbox" data-category="${category}">
                 <h3>${category}</h3>
-                <p><strong>One-Line Summary:</strong> ${oneLineSummary}</p>
+                <p><strong>One-Line Summary:</strong></p>
+                <ul>
+        `;
+        
+        // Add each point as a list item
+        points.forEach(point => {
+            content += `<li>${point.trim()}</li>`;
+        });
+        
+        // Close the list and category-summary div
+        content += `
+                </ul>
             </div>
         `;
-         // Close category-summary div
     }
     return content;
 }
