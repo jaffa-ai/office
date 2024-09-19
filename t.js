@@ -190,6 +190,8 @@ function generateSummary() {
     const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
     const customPromptInput = document.getElementById('customPromptInput');
     const customPrompt = customPromptInput ? customPromptInput.value.trim() : '';
+    const fewShotsInput = document.getElementById('fewShotsInput');
+    const fewShots = fewShotsInput ? fewShotsInput.value.trim() : '';
 
     if (!rawTextContent) {
         alert('No raw text available to summarize.');
@@ -200,6 +202,9 @@ function generateSummary() {
     const formData = new FormData();
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
+    if (fewShots) {
+        formData.append('few_shots', fewShots);
+    }
 
     fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
@@ -216,6 +221,11 @@ function generateSummary() {
     .catch(error => {
         console.error('Error:', error);
     });
+}
+
+function toggleFewShots() {
+    const container = document.getElementById('fewShotsContainer');
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
 }
 
 // Function to render the summary with clickable timestamps
