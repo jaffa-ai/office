@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+
+
     <title>Audio Transcript Interface</title>
     <link rel="stylesheet" href="t.css">
 </head>
@@ -28,26 +31,26 @@
     <!-- Result Page (hidden initially) -->
     <div id="resultPage" class="container" style="display: none;">
         <!-- Header with Logo -->
-        <header class="header">
-            <div class="logo">JAFFA.ai</div>
-        </header>
         
-        <div class="audio-section">
-            <div class="audio-player">
-                <!-- Backward and forward skip buttons -->
-                <button id="skipBackward15">-15s</button>
-                <button id="skipBackward30">-30s</button>
-                
-                <!-- Custom audio player with waveform -->
-                <audio id="audioPlayer">
-                    <source id="audioSource" src="Q4FY24(Titan)Earnings Call Recording.mp3" type="audio/mp3">
-                    Your browser does not support the audio element.
-                </audio>
-                <div id="waveform" class="center-waveform"></div>
-                
-                <!-- Forward skip buttons -->
-                <button id="skipForward15">+15s</button>
-                <button id="skipForward30">+30s</button>
+        
+        <div class="audio-container">
+            <div id="waveform" class="center-waveform"></div>
+            <div class="audio-controls">
+                <div class="backward-buttons">
+                    <button id="skipBackward30">-30s</button>
+                    <button id="skipBackward15">-15s</button>
+                </div>
+                <div class="audio-player-inner">
+                    <audio id="audioPlayer">
+                        <source id="audioSource" src="Q4FY24(Titan)Earnings Call Recording.mp3" type="audio/mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                    
+                </div>
+                <div class="forward-buttons">
+                    <button id="skipForward15">+15s</button>
+                    <button id="skipForward30">+30s</button>
+                </div>
             </div>
         </div>
 
@@ -69,24 +72,56 @@
 
                 <!-- Summary Section -->
                 <div id="Summary" class="tabcontent">
-                    <h2>Summary</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>Summary</h2>
+                        <!-- Button to show the default prompt, positioned to the right of the "Summary" heading -->
+                        <button id="showDefaultPromptBtn" onclick="toggleDefaultPrompt()">Instructions</button>
+                    </div>
+                
+                    <!-- Container to display or customize the default prompt -->
+                    <div id="defaultPromptContainer" style="display:none;">
+                        <div id="defaultPromptDisplay"></div>
+                        <button id="customizeBtn" onclick="enableCustomization()">Customize</button>
+                    </div>
+                
+                    <!-- Hidden input for editing the prompt, shown when user clicks Customize -->
+                    <div id="customPromptContainer" style="display:none;">
+                        <textarea id="customPromptInput" rows="4" cols="50"></textarea>
+                        <button id="saveBtn" onclick="saveCustomPrompt()">Save</button>
+                        <button id="cancelBtn" onclick="cancelCustomization()">Cancel</button>
+                    </div>
+                
                     <div id="summaryControls">
-                        <input type="text" id="customPromptInput" placeholder="Enter a custom prompt for the summary">
                         <button class="generate-btn" onclick="generateSummary()">Generate Summary</button>
                     </div>
+                    
                     <div id="summaryContent"></div>
                     <button onclick="copyText('summaryContent')">Copy Summary</button>
                     <button onclick="downloadText('summaryContent', 'summary.txt')">Download Summary</button>
                 </div>
+                
+                
+                
 
                 <!-- Q&A Section -->
                 <div id="QA" class="tabcontent">
+                    <button id="generateQAButton">Generate Q&A and OneLineSummary</button>
+                    
+                    <!-- Q&A Section -->
                     <h2>Q&A</h2>
-                    <button id="generateQAButton">Generate Q&A</button>
                     <div id="qaContent"></div>
                     <button onclick="copyText('qaContent')">Copy Q&A</button>
                     <button onclick="downloadText('qaContent', 'qa.txt')">Download Q&A</button>
+                    
+                    <!-- One-Liner Summary Section -->
+                    <h2>One-Liner Summary</h2>
+                    <div id="OnesummaryContent"></div> <!-- One-Liner Summary Content goes here -->
+                    <button onclick="copyText('OnesummaryContent')">Copy One-Liner Summary</button>
+                    <button onclick="downloadText('OnesummaryContent', 'summary.txt')">Download One-Liner Summary</button>
                 </div>
+                
+                
+                
 
                 <!-- Chat Section -->
                 <div id="Chat" class="tabcontent">

@@ -301,27 +301,31 @@ function generateQAOneLinerSummary() {
     .then(data => {
         console.log('Received data:', JSON.stringify(data, null, 2)); // Pretty print the entire received data
 
-        let summaryContent = '';
+        let qaContent = '';
+        let OnesummaryContent = '';
 
         if (data && data.one_liner_summary_by_cat) {
-            // Process the new response structure
-            summaryContent = processQAByCategory(data.one_liner_summary_by_cat);
+            // Process Q&A and summaries by category
+            qaContent = processQAByCategory(data.one_liner_summary_by_cat);
+            OnesummaryContent = processSummaryByCategory(data.one_liner_summary_by_cat); // FIXED this part
         } else {
-            // Handle unknown or error cases
             console.error('Received data does not match expected structure:', data);
-            summaryContent = '<p>Error: Unexpected data structure received.</p>';
+            qaContent = '<p>Error: Unexpected data structure received.</p>';
+            OnesummaryContent = '<p>Error: Unexpected data structure received.</p>';
         }
 
-        const qaContent = document.getElementById('qaContent');
-        qaContent.innerHTML = summaryContent;
+        // Populate the Q&A and One-Liner Summary sections
+        document.getElementById('qaContent').innerHTML = qaContent;
+        document.getElementById('OnesummaryContent').innerHTML = OnesummaryContent; // FIXED this part
 
-        addTimestampListeners(); // Ensure to add listeners after content is set
+        addTimestampListeners(); // Add listeners after content is set
         addDownloadCheckboxListeners(); // Add download checkbox listeners
     })
     .catch(error => {
         console.error('Error:', error);
         const qaContent = document.getElementById('qaContent');
         qaContent.innerHTML = `<p>Error: ${error.message}</p>`;
+        document.getElementById('OnesummaryContent').innerHTML = `<p>Error: ${error.message}</p>`; // FIXED this part
     });
 }
 
@@ -329,14 +333,12 @@ function processQAByCategory(oneLinerSummaryByCat) {
     let content = '';
     for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
         const qaList = data.qa_pairs;
-        const oneLineSummary = data.one_line_summary || 'No summary available';
-        
+
         // Add category header and checkbox for download
         content += `
             <div class="category-summary">
                 <input type="checkbox" class="category-checkbox" data-category="${category}">
                 <h3>${category}</h3>
-                <p><strong>One-Line Summary:</strong> ${oneLineSummary}</p>
         `;
 
         if (Array.isArray(qaList)) {
@@ -363,7 +365,25 @@ function processQAByCategory(oneLinerSummaryByCat) {
     return content;
 }
 
-// Function to format timestamps and add click listeners for audio
+function processSummaryByCategory(oneLinerSummaryByCat) {
+    let content = '';
+    for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
+        const oneLineSummary = data.one_line_summary || 'No summary available';
+
+        // Add category header and one-liner summary
+        content += `
+            <div class="category-summary">
+                <input type="checkbox" class="category-checkbox" data-category="${category}">
+                <h3>${category}</h3>
+                <p><strong>One-Line Summary:</strong> ${oneLineSummary}</p>
+            </div>
+        `;
+         // Close category-summary div
+    }
+    return content;
+}
+
+// Format timestamps for audio controls
 function formatTimestamps(timestamps) {
     const timestampArray = timestamps.replace(/[\[\]]/g, '').split(',');
     return timestampArray.map(ts => `
@@ -371,10 +391,10 @@ function formatTimestamps(timestamps) {
     `).join(', ');
 }
 
-// Add listeners for the timestamps to control audio playback
+// Add listeners for timestamps
 function addTimestampListeners() {
     document.querySelectorAll('.timestamp').forEach(el => {
-        el.addEventListener('click', function() {
+        el.addEventListener('click', function () {
             const timestamp = parseTime(this.dataset.timestamp);
             const audioPlayer = document.getElementById('audioPlayer');
             if (audioPlayer) {
@@ -393,24 +413,77 @@ function parseTime(timestamp) {
     return minutes * 60 + seconds;
 }
 
-// Function to handle checkboxes for category download
+// Add checkbox listeners for download
 function addDownloadCheckboxListeners() {
     document.querySelectorAll('.category-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
+        checkbox.addEventListener('change', function () {
             const selectedCategory = this.dataset.category;
             if (this.checked) {
                 console.log(`Selected category for download: ${selectedCategory}`);
-                // You can add logic here to trigger download of selected category
+                // You can add logic here to trigger the download of the selected category
             }
         });
     });
 }
+
+function addDownloadCheckboxListeners() {
+    document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const selectedCategory = this.dataset.category;
+            if (this.checked) {
+                console.log(`Selected category for download: ${selectedCategory}`);
+
+                // Find the content of the selected category
+                const categoryDiv = this.closest('.category-summary'); // Find the parent div with category content
+                const categoryContent = categoryDiv.innerText; // Get the entire category content as plain text
+
+                // Trigger the download for the selected category
+                const filename = `${selectedCategory}_content.txt`;
+                downloadCategoryContent(categoryContent, filename);
+            }
+        });
+    });
+}
+
+// Function to trigger the download with a specific name
+function downloadCategoryContent(content, filename) {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href); // Clean up the object URL after the download
+}
+
+
+// Utility functions for copying and downloading text
+function copyText(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent || element.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+    });
+}
+
+function downloadText(elementId, filename) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent || element.innerText;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
+// Event listener for the Generate Q&A button
 document.addEventListener('DOMContentLoaded', function() {
     const generateQAButton = document.getElementById('generateQAButton');
     if (generateQAButton) {
         generateQAButton.addEventListener('click', generateQAOneLinerSummary);
     }
-}); 
+
+    
+});
+
 
 // Function to open a tab
 function openTab(evt, tabName) {
@@ -559,4 +632,63 @@ function downloadText(elementId, filename) {
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
+}
+
+window.onload = function() {
+    fetchDefaultPrompt();
+};
+
+// Function to fetch the default prompt from the Flask backend
+let isDefaultPromptShown = false; // Track if the default prompt is displayed
+
+// Function to toggle visibility of the default prompt
+function toggleDefaultPrompt() {
+    const defaultPromptContainer = document.getElementById('defaultPromptContainer');
+    const showBtn = document.getElementById('showDefaultPromptBtn');
+    
+    if (!isDefaultPromptShown) {
+        // Fetch and show the default prompt only if it has not been shown yet
+        fetchDefaultPrompt();
+        defaultPromptContainer.style.display = 'block';
+        showBtn.innerText = 'Hide Default Prompt';
+        isDefaultPromptShown = true;
+    } else {
+        // Hide the default prompt if it is already shown
+        defaultPromptContainer.style.display = 'none';
+        showBtn.innerText = 'Show Default Prompt';
+        isDefaultPromptShown = false;
+    }
+}
+
+// Function to fetch the default prompt from the Flask backend
+function fetchDefaultPrompt() {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
+        .then(response => response.json())
+        .then(data => {
+            // Set the default prompt in the display area
+            document.getElementById('defaultPromptDisplay').innerText = data.default_prompt;
+            // Also set it as the value in the hidden textarea for later editing
+            document.getElementById('customPromptInput').value = data.default_prompt;
+        })
+        .catch(error => console.error('Error fetching default prompt:', error));
+}
+
+// Enable customization: show the textarea and save/cancel buttons
+function enableCustomization() {
+    document.getElementById('defaultPromptContainer').style.display = 'none';
+    document.getElementById('customPromptContainer').style.display = 'block';
+}
+
+// Save the customized prompt and switch back to display mode
+function saveCustomPrompt() {
+    const customPrompt = document.getElementById('customPromptInput').value;
+    document.getElementById('defaultPromptDisplay').innerText = customPrompt;
+    document.getElementById('defaultPromptContainer').style.display = 'block';
+    document.getElementById('customPromptContainer').style.display = 'none';
+}
+
+// Cancel customization: discard changes and switch back to display mode
+function cancelCustomization() {
+    document.getElementById('customPromptContainer').style.display = 'none';
+    document.getElementById('defaultPromptContainer').style.display = 'block';
 }
