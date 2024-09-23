@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let wavesurfer;
 
-    function initializeWaveSurfer() {
+    // Function to initialize WaveSurfer
+    window.initializeWaveSurfer = function() {
         if (!waveformContainer) {
             console.error('Waveform container not found');
             return;
@@ -17,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer = WaveSurfer.create({
             container: waveformContainer,
             waveColor: '#c1bfed',
-            progressColor: '1c2f50',
+            progressColor: '#1c2f50',
             backend: 'MediaElement',
             height: 80,
             barWidth: 2,
@@ -39,7 +40,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialize WaveSurfer when the audio is loaded
-    audioPlayer.addEventListener('loadedmetadata', initializeWaveSurfer);
+    audioPlayer.addEventListener('loadedmetadata', function() {
+        console.log('loadedmetadata event fired');
+        initializeWaveSurfer();
+    });
+
+    // Alternative: Initialize WaveSurfer when the audio can play
+    audioPlayer.addEventListener('canplay', function() {
+        console.log('canplay event fired');
+        initializeWaveSurfer();
+    });
 
     // Skip buttons functionality
     skipBackward15.addEventListener('click', () => {
@@ -58,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
         audioPlayer.currentTime += 30;
     });
 
-
     // Listen for timestamp click events to seek the audio
     document.getElementById('rawTextContent').addEventListener('click', function(event) {
         if (event.target.classList.contains('timestamp')) {
@@ -70,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Tab switching functionality
+    const tabs = document.querySelectorAll('.tablink');
+    const tabContents = document.querySelectorAll('.tabcontent');
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', function() {
             // Hide all tab contents
@@ -88,8 +99,81 @@ document.addEventListener('DOMContentLoaded', function() {
     tabContents[0].style.display = 'block';
 });
 
+window.startProcessing = function() {
+    const companyNameInput = document.getElementById('companyName');
+    const quarterInput = document.getElementById('quarter');
+
+    const companyName = companyNameInput.value.trim();
+    const quarter = quarterInput.value.trim();
+
+    if (companyName && quarter) {
+        // Show loading spinner
+        showLoadingSpinner();
+
+        // Prepare the form data to send in the request
+        const formData = new FormData();
+        formData.append('company_name', companyName);
+        formData.append('quarter', quarter);
+
+        fetch('http://127.0.0.1:5000/process', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response received:', response); // Debugging statement
+            return response.json().then(data => {
+                if (!response.ok) {
+                    // Server returned an error
+                    throw new Error(data.error || 'Unknown error');
+                }
+                return data;
+            });
+        })
+        .then(data => {
+            console.log('Data received:', data); // Debugging statement
+            hideLoadingSpinner();
+
+            if (data.corrected_text && data.audio_file) {
+                displayRawTextWithTimestamps(data.corrected_text);
+                setAudioSource(data.audio_file);
+                switchToResultPage();
+            } else if (data.error) {
+                console.error('Error fetching raw text:', data.error);
+                alert('Error processing files.');
+            }
+        })
+        .catch(error => {
+            hideLoadingSpinner();
+            console.error('Error:', error.message);
+            alert(`An error occurred: ${error.message}`);
+        });
+    } else {
+        alert('Please enter both a company name and a quarter.');
+    }
+}
+
+// Function to set the audio source and initialize WaveSurfer
+window.setAudioSource = function(encodedAudio) {
+    console.log('Setting audio source with encoded data'); // Debugging statement
+    const audioSource = document.getElementById('audioSource');
+    const audioBlob = iso88591ToBlob(encodedAudio, 'audio/mp3');
+    const audioUrl = URL.createObjectURL(audioBlob);
+    audioSource.src = audioUrl;
+    audioPlayer.load(); // Reload audio player with new source
+
+    // Initialize WaveSurfer with the new audio source
+    //initializeWaveSurfer();
+}
+
+// Function to convert ISO-8859-1 encoded string to Blob
+window.iso88591ToBlob = function(encoded, mime) {
+    const byteCharacters = Array.from(encoded).map(char => char.charCodeAt(0));
+    const byteArray = new Uint8Array(byteCharacters);
+    return new Blob([byteArray], { type: mime });
+}
+
 // Function to convert timestamps to seconds
-function parseTimestampToSeconds(timestamp) {
+window.parseTimestampToSeconds = function(timestamp) {
     const parts = timestamp.slice(1, -1).split(':'); // Removes the [ ] and splits the minutes and seconds
     const minutes = parseInt(parts[0], 10);
     const seconds = parseInt(parts[1], 10);
@@ -97,96 +181,30 @@ function parseTimestampToSeconds(timestamp) {
 }
 
 // Update this function to render timestamps as clickable spans
-function displayRawTextWithTimestamps(textWithTimestamps) {
+window.displayRawTextWithTimestamps = function(textWithTimestamps) {
     const rawTextContent = document.getElementById('rawTextContent');
     const formattedText = textWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
     rawTextContent.innerHTML = formattedText;
 }
 
-// Function to process PDF and audio files when the "Start" button is clicked
-window.startProcessing = function() {
-    const pdfInput = document.getElementById('pdfInput');
-    const audioInput = document.getElementById('audioInput');
-
-    const pdfFile = pdfInput.files[0];
-    const audioFile = audioInput.files[0];
-
-    if (pdfFile && audioFile) {
-        // Show loading spinner
-        showLoadingSpinner();
-        
-        // Set up FileReader for audio file
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            // Set the audio source to the uploaded file
-            const audioSource = document.getElementById('audioSource');
-            audioSource.src = event.target.result;
-            audioPlayer.load(); // Reload audio player with new source
-
-            // Call function to upload files
-            uploadFiles(pdfFile, audioFile);
-        };
-        reader.readAsDataURL(audioFile); // Read audio file as data URL
-    } else {
-        alert('Please upload both an audio file and a PDF file.');
-    }
-}
-
-// Function to upload PDF and audio files
-function uploadFiles(pdfFile, audioFile) {
-    const formData = new FormData();
-    formData.append('pdf', pdfFile);
-    formData.append('audio', audioFile);
-
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        return response.json().then(data => {
-            if (!response.ok) {
-                // Server returned an error
-                throw new Error(data.error || 'Unknown error');
-            }
-            return data;
-        });
-    })
-    .then(data => {
-        hideLoadingSpinner();
-
-        if (data.corrected_text) {
-            displayRawTextWithTimestamps(data.corrected_text);
-            switchToResultPage();
-        } else if (data.error) {
-            console.error('Error fetching raw text:', data.error);
-            alert('Error processing files.');
-        }
-    })
-    .catch(error => {
-        hideLoadingSpinner();
-        console.error('Error:', error.message);
-        alert(`An error occurred: ${error.message}`);
-    });
-}
-
 // Function to show the loading spinner
-function showLoadingSpinner() {
+window.showLoadingSpinner = function() {
     document.getElementById('loadingSpinner').style.display = 'block';
 }
 
 // Function to hide the loading spinner
-function hideLoadingSpinner() {
+window.hideLoadingSpinner = function() {
     document.getElementById('loadingSpinner').style.display = 'none';
 }
 
 // Function to switch to the result page after processing
-function switchToResultPage() {
+window.switchToResultPage = function() {
     document.getElementById('uploadPage').style.display = 'none';
     document.getElementById('resultPage').style.display = 'block';
 }
 
 // Function to request a summary from the Flask app
-function generateSummary() {
+window.generateSummary = function() {
     const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
     const customPromptInput = document.getElementById('customPromptInput');
     const customPrompt = customPromptInput ? customPromptInput.value.trim() : '';
@@ -206,7 +224,7 @@ function generateSummary() {
         formData.append('few_shots', fewShots);
     }
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
+    fetch('http://127.0.0.1:5000/summarize', {
         method: 'POST',
         body: formData
     })
@@ -223,16 +241,27 @@ function generateSummary() {
     });
 }
 
-function toggleFewShots() {
+window.toggleFewShots = function() {
     const container = document.getElementById('fewShotsContainer');
     container.style.display = container.style.display === 'none' ? 'block' : 'none';
 }
 
 // Function to render the summary with clickable timestamps
-function displaySummaryWithTimestamps(summaryWithTimestamps) {
+window.displaySummaryWithTimestamps = function(summaryWithTimestamps) {
     const summaryContent = document.getElementById('summaryContent');
     const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
-    summaryContent.innerHTML = formattedSummary;
+    const lines = formattedSummary.split('\n'); // Split the summary into lines
+    summaryContent.innerHTML = ''; // Clear previous content
+
+    // Function to display each line with a delay
+    function displayLineByLine(index) {
+        if (index < lines.length) {
+            summaryContent.innerHTML += lines[index] + '<br>';
+            setTimeout(() => displayLineByLine(index + 1), 100); // Adjust the delay as needed
+        }
+    }
+
+    displayLineByLine(0); // Start displaying lines
 
     // Add event listeners to play audio from the clicked timestamp in the summary
     summaryContent.addEventListener('click', function(event) {
@@ -245,6 +274,23 @@ function displaySummaryWithTimestamps(summaryWithTimestamps) {
         }
     });
 }
+//     const summaryContent = document.getElementById('summaryContent');
+//     const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+//     summaryContent.innerHTML = formattedSummary;
+
+//     // Add event listeners to play audio from the clicked timestamp in the summary
+//     summaryContent.addEventListener('click', function(event) {
+//         if (event.target.classList.contains('timestamp')) {
+//             const timestamp = event.target.getAttribute('data-timestamp');
+//             const seconds = parseTimestampToSeconds(timestamp);
+//             const audioPlayer = document.getElementById('audioPlayer');
+//             audioPlayer.currentTime = seconds;
+//             audioPlayer.play();  // Start playing from the clicked timestamp
+//         }
+//     });
+
+
+
 
 // Listen for timestamp click events to seek the audio in all sections
 document.querySelectorAll('.tab-content').forEach(tabContent => {
@@ -269,7 +315,7 @@ audioPlayer.addEventListener('timeupdate', () => {
 });
 
 // Function to highlight text and scroll into view based on the current audio time
-function highlightTextBasedOnTimestamp(currentTime, contentId) {
+window.highlightTextBasedOnTimestamp = function(currentTime, contentId) {
     const content = document.getElementById(contentId);
     const timestamps = content.querySelectorAll('.timestamp');
 
@@ -284,7 +330,7 @@ function highlightTextBasedOnTimestamp(currentTime, contentId) {
 }
 
 // Function to clear previous highlights
-function clearHighlight(contentId) {
+window.clearHighlight = function(contentId) {
     const content = document.getElementById(contentId);
     const highlighted = content.querySelector('.highlight');
     if (highlighted) {
@@ -508,6 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
 // Function to open a tab
 function openTab(evt, tabName) {
     // Get all elements with class="tabcontent" and hide them
@@ -565,7 +612,7 @@ function processCorrectedText(correctedText) {
 
 function askQuestion(question) {
     displayMessage('system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
+    fetch('http://127.0.0.1:5000/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -673,19 +720,19 @@ function toggleDefaultPrompt() {
         // Fetch and show the default prompt only if it has not been shown yet
         fetchDefaultPrompt();
         defaultPromptContainer.style.display = 'block';
-        showBtn.innerText = 'Hide Default Prompt';
+        showBtn.innerText = 'Hide Instructions';
         isDefaultPromptShown = true;
     } else {
         // Hide the default prompt if it is already shown
         defaultPromptContainer.style.display = 'none';
-        showBtn.innerText = 'Show Default Prompt';
+        showBtn.innerText = 'Instructions';
         isDefaultPromptShown = false;
     }
 }
 
 // Function to fetch the default prompt from the Flask backend
 function fetchDefaultPrompt() {
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
+    fetch('http://127.0.0.1:5000/default-prompt')
         .then(response => response.json())
         .then(data => {
             // Set the default prompt in the display area

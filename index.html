@@ -15,14 +15,28 @@
         <div class="file-upload">
             <h1>Audio Transcript Summarizer</h1>
             <h2>JAFFA.ai</h2>
-            <label for="pdfInput" class="custom-file-label">Upload PDF</label>
+            <!-- <label for="pdfInput" class="custom-file-label">Upload PDF</label>
             <input type="file" id="pdfInput" accept=".pdf">
             
             <label for="audioInput" class="custom-file-label">Upload Audio</label>
-            <input type="file" id="audioInput" accept=".mp3">
+            <input type="file" id="audioInput" accept=".mp3"> -->
+            <label for="companyName" class="custom-file-label">Select Company and Quarter</label>
+            <select id="companyName">
+                <option value="TITAN">TITAN</option>
+                <option value="PERSISTENT">PERSISTENT</option>
+                <
+            </select>
+            
+            
+            <select id="quarter">
+                <option value="Q4FY24">Q4FY24</option>
+                <option value="Q1FY25">Q1FY25</option>
+            </select>
             
             <button class="upload-btn" onclick="startProcessing()">Start</button>
         </div>
+        
+        
         
         <!-- Loading Spinner -->
         <div id="loadingSpinner" style="display: none;">Processing, please wait...</div>
@@ -42,10 +56,9 @@
                 </div>
                 <div class="audio-player-inner">
                     <audio id="audioPlayer">
-                        <source id="audioSource" src="Q4FY24(Titan)Earnings Call Recording.mp3" type="audio/mp3">
+                        <source id="audioSource" src="" type="audio/mp3">
                         Your browser does not support the audio element.
                     </audio>
-                    
                 </div>
                 <div class="forward-buttons">
                     <button id="skipForward15">+15s</button>
@@ -85,7 +98,7 @@
                     
                     <!-- Hidden input for editing the prompt, shown when user clicks Customize -->
                     <div id="customPromptContainer" style="display:none;">
-                        <textarea id="customPromptInput" rows="4" cols="50"></textarea>
+                        <textarea id="customPromptInput" rows="15" cols="100"></textarea>
                         <button id="saveBtn" onclick="saveCustomPrompt()">Save</button>
                         <button id="cancelBtn" onclick="cancelCustomization()">Cancel</button>
                     </div>
@@ -94,7 +107,7 @@
                     <div>
                         <button onclick="toggleFewShots()">Few-Shot Examples</button>
                         <div id="fewShotsContainer" style="display:none;">
-                            <textarea id="fewShotsInput" rows="4" cols="50" placeholder="Enter few-shot examples here..."></textarea>
+                            <textarea id="fewShotsInput" rows="15" cols="90" placeholder="Enter few-shot examples here..."></textarea>
                         </div>
                     </div>
                 
@@ -117,14 +130,14 @@
                     <!-- Q&A Section -->
                     <h2>Q&A</h2>
                     <div id="qaContent"></div>
-                    <button onclick="copyText('qaContent')">Copy Q&A</button>
+                    <button onclick="copyText('qaContent')" >Copy Q&A</button>
                     <button onclick="downloadText('qaContent', 'qa.txt')">Download Q&A</button>
                     
                     <!-- One-Liner Summary Section -->
                     <h2>One-Liner Summary</h2>
-                    <div id="OnesummaryContent"></div> <!-- One-Liner Summary Content goes here -->
-                    <button onclick="copyText('OnesummaryContent')">Copy One-Liner Summary</button>
-                    <button onclick="downloadText('OnesummaryContent', 'summary.txt')">Download One-Liner Summary</button>
+                    <div id="OnesummaryContent" ></div> <!-- One-Liner Summary Content goes here -->
+                    <button onclick="copyText('OnesummaryContent')" >Copy One-Liner Summary</button>
+                    <button onclick="downloadText('OnesummaryContent', 'summary.txt')" >Download One-Liner Summary</button>
                 </div>
                 
                 
