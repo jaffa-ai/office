@@ -138,7 +138,7 @@ function uploadFiles(pdfFile, audioFile) {
     formData.append('pdf', pdfFile);
     formData.append('audio', audioFile);
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
+    fetch('http://127.0.0.1:5000/process', {
         method: 'POST',
         body: formData
     })
@@ -206,7 +206,7 @@ function generateSummary() {
         formData.append('few_shots', fewShots);
     }
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
+    fetch('http://127.0.0.1:5000/summarize', {
         method: 'POST',
         body: formData
     })
@@ -303,7 +303,7 @@ function generateQAOneLinerSummary() {
     const formData = new FormData();
     formData.append('text', rawTextContent); // Append the raw text content
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+    fetch('http://127.0.0.1:5000/qa_one_liner_summary', {
         method: 'POST',
         body: formData, // Send the formData in the request body
     })
@@ -537,7 +537,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
+    fetch('http://127.0.0.1:5000/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -565,7 +565,7 @@ function processCorrectedText(correctedText) {
 
 function askQuestion(question) {
     displayMessage('system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
+    fetch('http://127.0.0.1:5000/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -685,7 +685,7 @@ function toggleDefaultPrompt() {
 
 // Function to fetch the default prompt from the Flask backend
 function fetchDefaultPrompt() {
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
+    fetch('http://127.0.0.1:5000/default-prompt')
         .then(response => response.json())
         .then(data => {
             // Set the default prompt in the display area
