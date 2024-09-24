@@ -9,11 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let wavesurfer;
 
     // Function to initialize WaveSurfer
-    window.initializeWaveSurfer = function() {
+   function  initializeWaveSurfer(){
         if (!waveformContainer) {
             console.error('Waveform container not found');
             return;
         }
+    
 
         wavesurfer = WaveSurfer.create({
             container: waveformContainer,
@@ -40,16 +41,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialize WaveSurfer when the audio is loaded
-    audioPlayer.addEventListener('loadedmetadata', function() {
-        console.log('loadedmetadata event fired');
-        initializeWaveSurfer();
-    });
+    // audioPlayer.addEventListener('loadedmetadata', function() {
+    //     console.log('loadedmetadata event fired');
+    //     initializeWaveSurfer();
+    // });
+    audioPlayer.addEventListener('loadedmetadata', initializeWaveSurfer);
+
 
     // Alternative: Initialize WaveSurfer when the audio can play
-    audioPlayer.addEventListener('canplay', function() {
-        console.log('canplay event fired');
-        initializeWaveSurfer();
-    });
+    // audioPlayer.addEventListener('canplay', function() {
+    //     console.log('canplay event fired');
+    //     initializeWaveSurfer();
+    // });
 
     // Skip buttons functionality
     skipBackward15.addEventListener('click', () => {
@@ -210,6 +213,13 @@ window.generateSummary = function() {
     const customPrompt = customPromptInput ? customPromptInput.value.trim() : '';
     const fewShotsInput = document.getElementById('fewShotsInput');
     const fewShots = fewShotsInput ? fewShotsInput.value.trim() : '';
+    const companyNameInput = document.getElementById('companyName');
+    const quarterInput = document.getElementById('quarter');
+
+    const companyName = companyNameInput.value.trim();
+    const quarter = quarterInput.value.trim();
+
+    
 
     if (!rawTextContent) {
         alert('No raw text available to summarize.');
@@ -220,6 +230,8 @@ window.generateSummary = function() {
     const formData = new FormData();
     formData.append('text', rawTextContent);
     formData.append('custom_prompt', customPrompt);
+    formData.append('company_name', companyName);
+    formData.append('quarter', quarter);
     if (fewShots) {
         formData.append('few_shots', fewShots);
     }
