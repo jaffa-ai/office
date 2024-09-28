@@ -78,9 +78,12 @@
 
             <div class="tabs-section">
                 <div class="tab-buttons">
-                    <button class="tablink" onclick="openTab(event, 'Summary')">Summary</button>
-                    <button class="tablink" onclick="openTab(event, 'QA')">Q&A</button>
-                    <button class="tablink" onclick="openTab(event, 'Chat')">Chat</button>
+                    
+                        <button class="tablink" onclick="openTab(event, 'Summary')">Summary</button>
+                        <button class="tablink" onclick="openTab(event, 'OneLinerSummary')">OneLinerSummary</button>
+                        <!-- <button class="tablink" onclick="openTab(event, 'QA')">Q&A</button> -->
+                        <button class="tablink" onclick="openTab(event, 'Chat')">Chat</button>
+                    
                 </div>
 
                 <!-- Summary Section -->
@@ -116,31 +119,60 @@
                     </div>
                     
                     <div id="summaryContent"></div>
+                    <style>
+                        #summaryContent {
+                            background-color: white;
+                            padding: 20px;
+                            border-radius: 10px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                        }
+
+                        #summaryContent .timestamp {
+                            color: #007BFF;
+                            cursor: pointer;
+                            text-decoration: underline;
+                        }
+
+                        #summaryContent .highlight {
+                            background-color: #FFFF00;
+                        }
+                    </style>
                     <button onclick="copyText('summaryContent')">Copy Summary</button>
                     <button onclick="downloadText('summaryContent', 'summary.txt')">Download Summary</button>
                 </div>
                 
                 
-                
-
-                <!-- Q&A Section -->
+                <div id="OneLinerSummary" class="tabcontent">
+                    <h2>One-Liner Summary</h2>
+                    <button onclick="fetchOpeningRemarksSummary()">Opening Remarks</button>
+                    <button onclick="fetchQASummary()">Q&A</button>
+                    <div id="oneLinerSummaryContent"></div>
+                    <button onclick="copySelectedOneLiners()">Copy Selected</button>
+                    <button onclick="downloadSelectedOneLiners()">Download Selected</button>
+                </div>
+            
+               
+<!--                 
                 <div id="QA" class="tabcontent">
                     <button id="generateQAButton">Generate Q&A and OneLineSummary</button>
                     
-                    <!-- Q&A Section -->
+                
                     <h2>Q&A</h2>
-                    <div id="qaContent"></div>
-                    <button onclick="copyText('qaContent')" >Copy Q&A</button>
-                    <button onclick="downloadText('qaContent', 'qa.txt')">Download Q&A</button>
+                    <div id="qaContent">
+                        <h3>Q&A</h3>
+                        <div id="qaItems"></div>
+                        <h3>One-Liner Summary</h3>
+                        <div id="oneLinerSummaryItems"></div>
+                    </div>
                     
-                    <!-- One-Liner Summary Section -->
-                    <h2>One-Liner Summary</h2>
-                    <div id="OnesummaryContent" ></div> <!-- One-Liner Summary Content goes here -->
-                    <button onclick="copyText('OnesummaryContent')" >Copy One-Liner Summary</button>
-                    <button onclick="downloadText('OnesummaryContent', 'summary.txt')" >Download One-Liner Summary</button>
-                </div>
+                    <button id="copySelected">Copy Selected</button>
+                    <button id="downloadSelected">Download Selected</button>
+                    <button id="downloadFull">Download Full</button>
+                </div> -->
                 
-                
+                 
                 
 
                 <!-- Chat Section -->
