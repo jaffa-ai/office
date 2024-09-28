@@ -1,4 +1,156 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+
+
+    window.fetchOpeningRemarksSummary = function() {
+        const companyName = document.getElementById('companyName').value.trim();
+        const quarter = document.getElementById('quarter').value.trim();
+
+        if (!companyName || !quarter) {
+            alert('Please select both a company and a quarter.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('company_name', companyName);
+        formData.append('quarter', quarter);
+
+        fetch('http://127.0.0.1:5000/opening_remarks_summary', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.summary) {
+                displayOneLinerSummary(data.summary);
+            } else if (data.error) {
+                console.error('Error fetching summary:', data.error);
+                alert('Error fetching summary.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while fetching the summary.');
+        });
+    };
+
+    // Function to fetch and display the Q&A summary
+    window.fetchQASummary = function() {
+        const companyName = document.getElementById('companyName').value.trim();
+        const quarter = document.getElementById('quarter').value.trim();
+
+        if (!companyName || !quarter) {
+            alert('Please select both a company and a quarter.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('company_name', companyName);
+        formData.append('quarter', quarter);
+
+        fetch('http://127.0.0.1:5000/qa_summary', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.summary) {
+                displayOneLinerSummary(data.summary);
+            } else if (data.error) {
+                console.error('Error fetching summary:', data.error);
+                alert('Error fetching summary.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while fetching the summary.');
+        });
+    };
+
+    // Function to display the one-liner summary with checkboxes and clickable timestamps
+    window.displayOneLinerSummary = function(summary) {
+        const oneLinerSummaryContent = document.getElementById('oneLinerSummaryContent');
+        const lines = summary.split('\n');
+        let content = '';
+
+        lines.forEach(line => {
+            if (line.startsWith('##')) {
+                content += `<h3>${line.substring(2).trim()}</h3>`;
+            } else if (line.startsWith('-')) {
+                const formattedLine = line.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+                content += `
+                    <div>
+                        <input type="checkbox" class="one-liner-checkbox" data-content="${line.trim()}">
+                        ${formattedLine.trim()}
+                    </div>
+                    <br>
+                `;
+            }
+        });
+        
+
+        oneLinerSummaryContent.innerHTML = content;
+
+        // Add event listeners to play audio from the clicked timestamp
+        oneLinerSummaryContent.querySelectorAll('.timestamp').forEach(el => {
+            el.addEventListener('click', function() {
+                const timestamp = this.getAttribute('data-timestamp');
+                const seconds = parseTimestampToSeconds(timestamp);
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.currentTime = seconds;
+                audioPlayer.play();
+            });
+        });
+    };
+
+    // Function to parse timestamp to seconds
+    window.parseTimestampToSeconds = function(timestamp) {
+        const parts = timestamp.slice(1, -1).split(':'); // Removes the [ ] and splits the minutes and seconds
+        const minutes = parseInt(parts[0], 10);
+        const seconds = parseInt(parts[1], 10);
+        return minutes * 60 + seconds;
+    };
+
+    // Function to copy selected one-liner summaries
+    window.copySelectedOneLiners = function() {
+        const selectedItems = document.querySelectorAll('.one-liner-checkbox:checked');
+        let textToCopy = '';
+        selectedItems.forEach(item => {
+            textToCopy += item.dataset.content + '\n';
+        });
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert('Copied to clipboard!');
+        });
+    };
+
+    // Function to download selected one-liner summaries
+    window.downloadSelectedOneLiners = function() {
+        const selectedItems = document.querySelectorAll('.one-liner-checkbox:checked');
+        let textToDownload = '';
+        selectedItems.forEach(item => {
+            textToDownload += item.dataset.content + '\n';
+        });
+        const blob = new Blob([textToDownload], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'selected_one_liners.txt';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const audioPlayer = document.getElementById('audioPlayer');
     const waveformContainer = document.getElementById('waveform');
     const skipBackward15 = document.getElementById('skipBackward15');
@@ -349,221 +501,221 @@ window.clearHighlight = function(contentId) {
         highlighted.classList.remove('highlight');
     }
 }
-function generateQAOneLinerSummary() {
-    const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
+// function generateQAOneLinerSummary() {
+//     const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
 
-    if (!rawTextContent) {
-        alert('No raw text available to summarize.');
-        return;
-    }
+//     if (!rawTextContent) {
+//         alert('No raw text available to summarize.');
+//         return;
+//     }
 
-    // Prepare the form data to send in the request
-    const formData = new FormData();
-    formData.append('text', rawTextContent); // Append the raw text content
+//     // Prepare the form data to send in the request
+//     const formData = new FormData();
+//     formData.append('text', rawTextContent); // Append the raw text content
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
-        method: 'POST',
-        body: formData, // Send the formData in the request body
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Received data:', JSON.stringify(data, null, 2)); // Pretty print the entire received data
+//     fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
+//         method: 'POST',
+//         body: formData, // Send the formData in the request body
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         console.log('Received data:', JSON.stringify(data, null, 2)); // Pretty print the entire received data
 
-        let qaContent = '';
-        let OnesummaryContent = '';
+//         let qaContent = '';
+//         let OnesummaryContent = '';
 
-        if (data && data.one_liner_summary_by_cat) {
-            // Process Q&A and summaries by category
-            qaContent = processQAByCategory(data.one_liner_summary_by_cat);
-            OnesummaryContent = processSummaryByCategory(data.one_liner_summary_by_cat); // FIXED this part
-        } else {
-            console.error('Received data does not match expected structure:', data);
-            qaContent = '<p>Error: Unexpected data structure received.</p>';
-            OnesummaryContent = '<p>Error: Unexpected data structure received.</p>';
-        }
+//         if (data && data.one_liner_summary_by_cat) {
+//             // Process Q&A and summaries by category
+//             qaContent = processQAByCategory(data.one_liner_summary_by_cat);
+//             OnesummaryContent = processSummaryByCategory(data.one_liner_summary_by_cat); // FIXED this part
+//         } else {
+//             console.error('Received data does not match expected structure:', data);
+//             qaContent = '<p>Error: Unexpected data structure received.</p>';
+//             OnesummaryContent = '<p>Error: Unexpected data structure received.</p>';
+//         }
 
-        // Populate the Q&A and One-Liner Summary sections
-        document.getElementById('qaContent').innerHTML = qaContent;
-        document.getElementById('OnesummaryContent').innerHTML = OnesummaryContent; // FIXED this part
+//         // Populate the Q&A and One-Liner Summary sections
+//         document.getElementById('qaContent').innerHTML = qaContent;
+//         document.getElementById('OnesummaryContent').innerHTML = OnesummaryContent; // FIXED this part
 
-        addTimestampListeners(); // Add listeners after content is set
-        addDownloadCheckboxListeners(); // Add download checkbox listeners
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        const qaContent = document.getElementById('qaContent');
-        qaContent.innerHTML = `<p>Error: ${error.message}</p>`;
-        document.getElementById('OnesummaryContent').innerHTML = `<p>Error: ${error.message}</p>`; // FIXED this part
-    });
-}
+//         addTimestampListeners(); // Add listeners after content is set
+//         addDownloadCheckboxListeners(); // Add download checkbox listeners
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//         const qaContent = document.getElementById('qaContent');
+//         qaContent.innerHTML = `<p>Error: ${error.message}</p>`;
+//         document.getElementById('OnesummaryContent').innerHTML = `<p>Error: ${error.message}</p>`; // FIXED this part
+//     });
+// }
 
-function processQAByCategory(oneLinerSummaryByCat) {
-    let content = '';
-    for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
-        const qaList = data.qa_pairs;
+// function processQAByCategory(oneLinerSummaryByCat) {
+//     let content = '';
+//     for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
+//         const qaList = data.qa_pairs;
 
-        // Add category header and checkbox for download
-        content += `
-            <div class="category-summary">
-                <input type="checkbox" class="category-checkbox" data-category="${category}">
-                <h3>${category}</h3>
-        `;
+//         // Add category header and checkbox for download
+//         content += `
+//             <div class="category-summary">
+//                 <input type="checkbox" class="category-checkbox" data-category="${category}">
+//                 <h3>${category}</h3>
+//         `;
 
-        if (Array.isArray(qaList)) {
-            qaList.forEach(item => {
-                const questionTimestamps = formatTimestamps(item.timestamps_questions);
-                const answerTimestamps = formatTimestamps(item.timestamps_answers);
+//         if (Array.isArray(qaList)) {
+//             qaList.forEach(item => {
+//                 const questionTimestamps = formatTimestamps(item.timestamps_questions);
+//                 const answerTimestamps = formatTimestamps(item.timestamps_answers);
 
-                content += `
-                    <div class="qa-item">
-                        <p><strong>Question:</strong> ${item.question}</p>
-                        <p><strong>Question Timestamps:</strong> ${questionTimestamps}</p>
-                        <p><strong>Context:</strong> ${item.context}</p>
-                        <p><strong>Answer:</strong> ${item.answer}</p>
-                        <p><strong>Answer Timestamps:</strong> ${answerTimestamps}</p>
-                    </div>
-                `;
-            });
-        } else {
-            console.error(`qaList for category ${category} is not an array:`, qaList);
-        }
+//                 content += `
+//                     <div class="qa-item">
+//                         <p><strong>Question:</strong> ${item.question}</p>
+//                         <p><strong>Question Timestamps:</strong> ${questionTimestamps}</p>
+//                         <p><strong>Context:</strong> ${item.context}</p>
+//                         <p><strong>Answer:</strong> ${item.answer}</p>
+//                         <p><strong>Answer Timestamps:</strong> ${answerTimestamps}</p>
+//                     </div>
+//                 `;
+//             });
+//         } else {
+//             console.error(`qaList for category ${category} is not an array:`, qaList);
+//         }
 
-        content += '</div>'; // Close category-summary div
-    }
-    return content;
-}
+//         content += '</div>'; // Close category-summary div
+//     }
+//     return content;
+// }
 
-function processSummaryByCategory(oneLinerSummaryByCat) {
-    let content = '';
-    for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
-        const oneLineSummary = data.one_line_summary || 'No summary available';
+// function processSummaryByCategory(oneLinerSummaryByCat) {
+//     let content = '';
+//     for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
+//         const oneLineSummary = data.one_line_summary || 'No summary available';
         
-        // Split the one-liner summary into points
-        const points = oneLineSummary.split('-').filter(point => point.trim() !== '');
+//         // Split the one-liner summary into points
+//         const points = oneLineSummary.split('-').filter(point => point.trim() !== '');
         
-        // Add category header
-        content += `
-            <div class="category-summary">
-                <input type="checkbox" class="category-checkbox" data-category="${category}">
-                <h3>${category}</h3>
-                <p><strong>One-Line Summary:</strong></p>
-                <ul>
-        `;
+//         // Add category header
+//         content += `
+//             <div class="category-summary">
+//                 <input type="checkbox" class="category-checkbox" data-category="${category}">
+//                 <h3>${category}</h3>
+//                 <p><strong>One-Line Summary:</strong></p>
+//                 <ul>
+//         `;
         
-        // Add each point as a list item
-        points.forEach(point => {
-            content += `<li>${point.trim()}</li>`;
-        });
+//         // Add each point as a list item
+//         points.forEach(point => {
+//             content += `<li>${point.trim()}</li>`;
+//         });
         
-        // Close the list and category-summary div
-        content += `
-                </ul>
-            </div>
-        `;
-    }
-    return content;
-}
+//         // Close the list and category-summary div
+//         content += `
+//                 </ul>
+//             </div>
+//         `;
+//     }
+//     return content;
+// }
 
-// Format timestamps for audio controls
-function formatTimestamps(timestamps) {
-    const timestampArray = timestamps.replace(/[\[\]]/g, '').split(',');
-    return timestampArray.map(ts => `
-        <span class="timestamp" data-timestamp="${ts.trim()}">${ts.trim()}</span>
-    `).join(', ');
-}
+// // Format timestamps for audio controls
+// function formatTimestamps(timestamps) {
+//     const timestampArray = timestamps.replace(/[\[\]]/g, '').split(',');
+//     return timestampArray.map(ts => `
+//         <span class="timestamp" data-timestamp="${ts.trim()}">${ts.trim()}</span>
+//     `).join(', ');
+// }
 
-// Add listeners for timestamps
-function addTimestampListeners() {
-    document.querySelectorAll('.timestamp').forEach(el => {
-        el.addEventListener('click', function () {
-            const timestamp = parseTime(this.dataset.timestamp);
-            const audioPlayer = document.getElementById('audioPlayer');
-            if (audioPlayer) {
-                audioPlayer.currentTime = timestamp;
-                audioPlayer.play();
-            }
-        });
-    });
-}
+// // Add listeners for timestamps
+// function addTimestampListeners() {
+//     document.querySelectorAll('.timestamp').forEach(el => {
+//         el.addEventListener('click', function () {
+//             const timestamp = parseTime(this.dataset.timestamp);
+//             const audioPlayer = document.getElementById('audioPlayer');
+//             if (audioPlayer) {
+//                 audioPlayer.currentTime = timestamp;
+//                 audioPlayer.play();
+//             }
+//         });
+//     });
+// }
 
-// Convert timestamp format [MM:SS] to seconds
-function parseTime(timestamp) {
-    const parts = timestamp.split(':');
-    const minutes = parseInt(parts[0], 10);
-    const seconds = parseInt(parts[1], 10);
-    return minutes * 60 + seconds;
-}
+// // Convert timestamp format [MM:SS] to seconds
+// function parseTime(timestamp) {
+//     const parts = timestamp.split(':');
+//     const minutes = parseInt(parts[0], 10);
+//     const seconds = parseInt(parts[1], 10);
+//     return minutes * 60 + seconds;
+// }
 
-// Add checkbox listeners for download
-function addDownloadCheckboxListeners() {
-    document.querySelectorAll('.category-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            const selectedCategory = this.dataset.category;
-            if (this.checked) {
-                console.log(`Selected category for download: ${selectedCategory}`);
-                // You can add logic here to trigger the download of the selected category
-            }
-        });
-    });
-}
+// // Add checkbox listeners for download
+// function addDownloadCheckboxListeners() {
+//     document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+//         checkbox.addEventListener('change', function () {
+//             const selectedCategory = this.dataset.category;
+//             if (this.checked) {
+//                 console.log(`Selected category for download: ${selectedCategory}`);
+//                 // You can add logic here to trigger the download of the selected category
+//             }
+//         });
+//     });
+// }
 
-function addDownloadCheckboxListeners() {
-    document.querySelectorAll('.category-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            const selectedCategory = this.dataset.category;
-            if (this.checked) {
-                console.log(`Selected category for download: ${selectedCategory}`);
+// function addDownloadCheckboxListeners() {
+//     document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+//         checkbox.addEventListener('change', function () {
+//             const selectedCategory = this.dataset.category;
+//             if (this.checked) {
+//                 console.log(`Selected category for download: ${selectedCategory}`);
 
-                // Find the content of the selected category
-                const categoryDiv = this.closest('.category-summary'); // Find the parent div with category content
-                const categoryContent = categoryDiv.innerText; // Get the entire category content as plain text
+//                 // Find the content of the selected category
+//                 const categoryDiv = this.closest('.category-summary'); // Find the parent div with category content
+//                 const categoryContent = categoryDiv.innerText; // Get the entire category content as plain text
 
-                // Trigger the download for the selected category
-                const filename = `${selectedCategory}_content.txt`;
-                downloadCategoryContent(categoryContent, filename);
-            }
-        });
-    });
-}
+//                 // Trigger the download for the selected category
+//                 const filename = `${selectedCategory}_content.txt`;
+//                 downloadCategoryContent(categoryContent, filename);
+//             }
+//         });
+//     });
+// }
 
-// Function to trigger the download with a specific name
-function downloadCategoryContent(content, filename) {
-    const blob = new Blob([content], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(link.href); // Clean up the object URL after the download
-}
+// // Function to trigger the download with a specific name
+// function downloadCategoryContent(content, filename) {
+//     const blob = new Blob([content], { type: 'text/plain' });
+//     const link = document.createElement('a');
+//     link.href = URL.createObjectURL(blob);
+//     link.download = filename;
+//     link.click();
+//     URL.revokeObjectURL(link.href); // Clean up the object URL after the download
+// }
 
 
-// Utility functions for copying and downloading text
-function copyText(elementId) {
-    const element = document.getElementById(elementId);
-    const text = element.textContent || element.innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Copied to clipboard!');
-    });
-}
+// // Utility functions for copying and downloading text
+// function copyText(elementId) {
+//     const element = document.getElementById(elementId);
+//     const text = element.textContent || element.innerText;
+//     navigator.clipboard.writeText(text).then(() => {
+//         alert('Copied to clipboard!');
+//     });
+// }
 
-function downloadText(elementId, filename) {
-    const element = document.getElementById(elementId);
-    const text = element.textContent || element.innerText;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
-// Event listener for the Generate Q&A button
-document.addEventListener('DOMContentLoaded', function() {
-    const generateQAButton = document.getElementById('generateQAButton');
-    if (generateQAButton) {
-        generateQAButton.addEventListener('click', generateQAOneLinerSummary);
-    }
+// function downloadText(elementId, filename) {
+//     const element = document.getElementById(elementId);
+//     const text = element.textContent || element.innerText;
+//     const blob = new Blob([text], { type: 'text/plain' });
+//     const link = document.createElement('a');
+//     link.href = URL.createObjectURL(blob);
+//     link.download = filename;
+//     link.click();
+// }
+// // Event listener for the Generate Q&A button
+// document.addEventListener('DOMContentLoaded', function() {
+//     const generateQAButton = document.getElementById('generateQAButton');
+//     if (generateQAButton) {
+//         generateQAButton.addEventListener('click', generateQAOneLinerSummary);
+//     }
 
     
-});
+// });
 
 
 
@@ -596,7 +748,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
+    fetch('http://127.0.0.1:5000/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -658,6 +810,7 @@ function askQuestion(question) {
 
 function sendMessage() {
     const chatInput = document.getElementById('chatInput');
+    const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
     const message = chatInput.value.trim();
     
     if (message === '') {
@@ -666,8 +819,8 @@ function sendMessage() {
     
     displayMessage(message, 'user');
     
-    if (!correctedTextProcessed) {
-        processCorrectedText(message);
+    if (!correctedTextProcessed) { 
+        processCorrectedText(rawTextContent);
     } else {
         askQuestion(message);
     }
@@ -773,4 +926,215 @@ function saveCustomPrompt() {
 function cancelCustomization() {
     document.getElementById('customPromptContainer').style.display = 'none';
     document.getElementById('defaultPromptContainer').style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const generateQAButton = document.getElementById('generateQAButton');
+    if (generateQAButton) {
+        generateQAButton.addEventListener('click', generateQAOneLinerSummary);
+    }
+
+    document.getElementById('copySelected').addEventListener('click', copySelectedItems);
+    document.getElementById('downloadSelected').addEventListener('click', downloadSelectedItems);
+    document.getElementById('downloadFull').addEventListener('click', downloadFullContent);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const generateQAButton = document.getElementById('generateQAButton');
+    if (generateQAButton) {
+        generateQAButton.addEventListener('click', generateQAOneLinerSummary);
+    }
+
+    document.getElementById('copySelected').addEventListener('click', copySelectedItems);
+    document.getElementById('downloadSelected').addEventListener('click', downloadSelectedItems);
+    document.getElementById('downloadFull').addEventListener('click', downloadFullContent);
+});
+
+/////////////////sdsfddddddddddddddddddddddddd
+
+function generateQAOneLinerSummary() {
+    const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
+
+    if (!rawTextContent) {
+        alert('No raw text available to summarize.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('text', rawTextContent);
+
+    fetch('http://127.0.0.1:5000/qa_one_liner_summary', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Received data:', JSON.stringify(data, null, 2));
+
+        let qaContent = '';
+        let oneLinerSummaryContent = '';
+
+        if (data && data.one_liner_summary_by_cat) {
+            qaContent = processQAByCategory(data.one_liner_summary_by_cat);
+            oneLinerSummaryContent = processSummaryByCategory(data.one_liner_summary_by_cat);
+        } else {
+            console.error('Received data does not match expected structure:', data);
+            qaContent = '<p>Error: Unexpected data structure received.</p>';
+            oneLinerSummaryContent = '<p>Error: Unexpected data structure received.</p>';
+        }
+
+        document.getElementById('qaItems').innerHTML = qaContent;
+        document.getElementById('oneLinerSummaryItems').innerHTML = oneLinerSummaryContent;
+
+        addTimestampListeners();
+        addDownloadCheckboxListeners();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('qaItems').innerHTML = `<p>Error: ${error.message}</p>`;
+        document.getElementById('oneLinerSummaryItems').innerHTML = `<p>Error: ${error.message}</p>`;
+    });
+}
+
+function processQAByCategory(oneLinerSummaryByCat) {
+    let content = '';
+    for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
+        const qaList = data.qa_pairs;
+
+        content += `
+            <div class="category-summary">
+                <h4>${category}</h4>
+        `;
+
+        if (Array.isArray(qaList)) {
+            qaList.forEach(item => {
+                const questionTimestamps = formatTimestamps(item.timestamps_questions);
+                const answerTimestamps = formatTimestamps(item.timestamps_answers);
+
+                content += `
+                    <div class="qa-item">
+                        <input type="checkbox" class="qa-checkbox" data-category="${category}" data-type="qa" data-content="${item.question} ${item.answer}">
+                        <p><strong>Question:</strong> ${item.question}</p>
+                        <p><strong>Question Timestamps:</strong> ${questionTimestamps}</p>
+                        <p><strong>Context:</strong> ${item.context}</p>
+                        <p><strong>Answer:</strong> ${item.answer}</p>
+                        <p><strong>Answer Timestamps:</strong> ${answerTimestamps}</p>
+                    </div>
+                `;
+            });
+        } else {
+            console.error(`qaList for category ${category} is not an array:`, qaList);
+        }
+
+        content += '</div>';
+    }
+    return content;
+}
+
+function processSummaryByCategory(oneLinerSummaryByCat) {
+    let content = '';
+    for (const [category, data] of Object.entries(oneLinerSummaryByCat)) {
+        const oneLineSummary = data.one_line_summary || 'No summary available';
+        const points = oneLineSummary.split('-').filter(point => point.trim() !== '');
+
+        content += `
+            <div class="category-summary">
+                <h4>${category}</h4>
+                <p><strong>One-Line Summary:</strong></p>
+                <ul>
+        `;
+
+        points.forEach(point => {
+            content += `
+                <li>
+                    <input type="checkbox" class="summary-checkbox" data-category="${category}" data-type="summary" data-content="${point.trim()}">
+                    ${point.trim()}
+                </li>
+            `;
+        });
+
+        content += `
+                </ul>
+            </div>
+        `;
+    }
+    return content;
+}
+
+function formatTimestamps(timestamps) {
+    const timestampArray = timestamps.replace(/[\[\]]/g, '').split(',');
+    return timestampArray.map(ts => `
+        <span class="timestamp" data-timestamp="${ts.trim()}">${ts.trim()}</span>
+    `).join(', ');
+}
+
+function addTimestampListeners() {
+    document.querySelectorAll('.timestamp').forEach(el => {
+        el.addEventListener('click', function () {
+            const timestamp = parseTime(this.dataset.timestamp);
+            const audioPlayer = document.getElementById('audioPlayer');
+            if (audioPlayer) {
+                audioPlayer.currentTime = timestamp;
+                audioPlayer.play();
+            }
+        });
+    });
+}
+
+function parseTime(timestamp) {
+    const parts = timestamp.split(':');
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    return minutes * 60 + seconds;
+}
+
+function addDownloadCheckboxListeners() {
+    document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const selectedCategory = this.dataset.category;
+            if (this.checked) {
+                console.log(`Selected category for download: ${selectedCategory}`);
+                const categoryDiv = this.closest('.category-summary');
+                const categoryContent = categoryDiv.innerText;
+                const filename = `${selectedCategory}_content.txt`;
+                downloadCategoryContent(categoryContent, filename);
+            }
+        });
+    });
+}
+
+function copySelectedItems() {
+    const selectedItems = document.querySelectorAll('.qa-checkbox:checked, .summary-checkbox:checked');
+    let textToCopy = '';
+    selectedItems.forEach(item => {
+        textToCopy += item.dataset.content + '\n';
+    });
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('Copied to clipboard!');
+    });
+}
+
+function downloadSelectedItems() {
+    const selectedItems = document.querySelectorAll('.qa-checkbox:checked, .summary-checkbox:checked');
+    let textToDownload = '';
+    selectedItems.forEach(item => {
+        textToDownload += item.dataset.content + '\n';
+    });
+    const blob = new Blob([textToDownload], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'selected_content.txt';
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+function downloadFullContent() {
+    const qaContent = document.getElementById('qaItems').innerText;
+    const oneLinerSummaryContent = document.getElementById('oneLinerSummaryItems').innerText;
+    const fullContent = qaContent + '\n\n' + oneLinerSummaryContent;
+    const blob = new Blob([fullContent], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'full_content.txt';
+    link.click();
+    URL.revokeObjectURL(link.href);
 }
