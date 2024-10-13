@@ -77,44 +77,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const oneLinerSummaryContent = document.getElementById('oneLinerSummaryContent');
         const lines = summary.split('\n');
         let content = '';
-
-
+ 
+ 
         let currentCategory = '';
-
-        lines.forEach(line => {
-            if (line.startsWith('##')) {
-                if (currentCategory) {
-                    content += `</div>`; // Close previous category div
-                }
-                currentCategory = line.substring(2).trim();
-                content += `
-                    <div class="category-summary">
-                        <h3>
-                            <input type="checkbox" class="category-checkbox"> ${currentCategory}
-                        </h3>
-                `;
-            } else {
-                // Check if the line contains a hyphen, if not, split by newline
-                const oneLiners = line.includes('-') ? line.split('-') : line.split('\n');
-                oneLiners.forEach(oneLiner => {
-                    if (oneLiner.trim()) {
-                        const formattedLine = oneLiner.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
-                        content += `
-                            <div>
-                                <input type="checkbox" class="one-liner-checkbox" data-content="${oneLiner.trim()}">
-                                ${formattedLine.trim()}
-                            </div>
-                            <br>
-                        `;
-                    }
-                });
+ 
+    lines.forEach(line => {
+        if (line.startsWith('##')) {
+            if (currentCategory) {
+                content += `</div>`; // Close previous category div
             }
-        });
-    
+            currentCategory = line.substring(2).trim();
+            content += `
+                <div class="category-summary">
+                    <h3>
+                        <input type="checkbox" class="category-checkbox"> ${currentCategory}
+                    </h3>
+            `;
+        } else if (line.startsWith('-')) {
+            const formattedLine = line.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+    content += `
+        <div>
+            <input type="checkbox" class="one-liner-checkbox" data-content="${line.trim()}">
+            ${formattedLine.trim().substring(1).trim()} <!-- Remove the dash -->
+        </div>
+        <br>
+    `;
+        }
+    });
+         
+ 
         oneLinerSummaryContent.innerHTML = content;
         addCategoryCheckboxListeners(); // Attach listeners to category checkboxes
-
-
+ 
+ 
         // Add event listeners to play audio from the clicked timestamp
         oneLinerSummaryContent.querySelectorAll('.timestamp').forEach(el => {
             el.addEventListener('click', function() {
@@ -126,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     };
-
+ 
     // Function to parse timestamp to seconds
     window.parseTimestampToSeconds = function(timestamp) {
         const parts = timestamp.slice(1, -1).split(':'); // Removes the [ ] and splits the minutes and seconds
@@ -134,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const seconds = parseInt(parts[1], 10);
         return minutes * 60 + seconds;
     };
-
+ 
     // Function to copy selected one-liner summaries
     window.copySelectedOneLiners = function() {
         const selectedItems = document.querySelectorAll('.one-liner-checkbox:checked');
@@ -146,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Copied to clipboard!');
         });
     };
-
+ 
     // Function to download selected one-liner summaries
     window.downloadSelectedOneLiners = function() {
         const selectedItems = document.querySelectorAll('.one-liner-checkbox:checked');
