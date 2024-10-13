@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('http://127.0.0.1:5000/opening_remarks_summary', {
+        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/opening_remarks_summary', {
             method: 'POST',
             body: formData
         })
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('http://127.0.0.1:5000/qa_summary', {
+        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_summary', {
             method: 'POST',
             body: formData
         })
@@ -78,23 +78,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const lines = summary.split('\n');
         let content = '';
 
+
+        let currentCategory = '';
+
         lines.forEach(line => {
             if (line.startsWith('##')) {
-                content += `<h3>${line.substring(2).trim()}</h3>`;
-            } else if (line.startsWith('-')) {
-                const formattedLine = line.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+                if (currentCategory) {
+                    content += `</div>`; // Close previous category div
+                }
+                currentCategory = line.substring(2).trim();
                 content += `
-                    <div>
-                        <input type="checkbox" class="one-liner-checkbox" data-content="${line.trim()}">
-                        ${formattedLine.trim()}
-                    </div>
-                    <br>
+                    <div class="category-summary">
+                        <h3>
+                            <input type="checkbox" class="category-checkbox"> ${currentCategory}
+                        </h3>
                 `;
+            } else {
+                // Check if the line contains a hyphen, if not, split by newline
+                const oneLiners = line.includes('-') ? line.split('-') : line.split('\n');
+                oneLiners.forEach(oneLiner => {
+                    if (oneLiner.trim()) {
+                        const formattedLine = oneLiner.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+                        content += `
+                            <div>
+                                <input type="checkbox" class="one-liner-checkbox" data-content="${oneLiner.trim()}">
+                                ${formattedLine.trim()}
+                            </div>
+                            <br>
+                        `;
+                    }
+                });
             }
         });
-        
-
+    
         oneLinerSummaryContent.innerHTML = content;
+        addCategoryCheckboxListeners(); // Attach listeners to category checkboxes
+
 
         // Add event listeners to play audio from the clicked timestamp
         oneLinerSummaryContent.querySelectorAll('.timestamp').forEach(el => {
@@ -275,7 +294,7 @@ window.startProcessing = function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('http://127.0.0.1:5000/process', {
+        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
             method: 'POST',
             body: formData
         })
@@ -313,16 +332,49 @@ window.startProcessing = function() {
 }
 
 // Function to set the audio source and initialize WaveSurfer
+// window.setAudioSource = function(encodedAudio) {
+//     console.log('Setting audio source with encoded data'); // Debugging statement
+//     const audioSource = document.getElementById('audioSource');
+//     const audioBlob = iso88591ToBlob(encodedAudio, 'audio/mp3');
+//     const audioUrl = URL.createObjectURL(audioBlob);
+//     audioSource.src = audioUrl;
+//     audioPlayer.load(); // Reload audio player with new source
+
+//     // Initialize WaveSurfer with the new audio source
+//     //initializeWaveSurfer();
+// }
+
+// // Function to convert ISO-8859-1 encoded string to Blob
+// window.iso88591ToBlob = function(encoded, mime) {
+//     const byteCharacters = Array.from(encoded).map(char => char.charCodeAt(0));
+//     const byteArray = new Uint8Array(byteCharacters);
+//     return new Blob([byteArray], { type: mime });
+// }
+
 window.setAudioSource = function(encodedAudio) {
     console.log('Setting audio source with encoded data'); // Debugging statement
     const audioSource = document.getElementById('audioSource');
-    const audioBlob = iso88591ToBlob(encodedAudio, 'audio/mp3');
+
+    // Decode base64 to binary string
+    const binaryString = atob(encodedAudio);
+
+    // Convert binary string to array buffer
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Create a Blob from the array buffer
+    const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+
+    // Create a URL for the Blob and set it as the audio source
     const audioUrl = URL.createObjectURL(audioBlob);
     audioSource.src = audioUrl;
     audioPlayer.load(); // Reload audio player with new source
 
     // Initialize WaveSurfer with the new audio source
-    //initializeWaveSurfer();
+    // initializeWaveSurfer();
 }
 
 // Function to convert ISO-8859-1 encoded string to Blob
@@ -345,6 +397,8 @@ window.displayRawTextWithTimestamps = function(textWithTimestamps) {
     const rawTextContent = document.getElementById('rawTextContent');
     const formattedText = textWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
     rawTextContent.innerHTML = formattedText;
+
+
 }
 
 // Function to show the loading spinner
@@ -393,7 +447,7 @@ window.generateSummary = function() {
         formData.append('few_shots', fewShots);
     }
 
-    fetch('http://127.0.0.1:5000/summarize', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
         body: formData
     })
@@ -487,13 +541,45 @@ audioPlayer.addEventListener('timeupdate', () => {
 window.highlightTextBasedOnTimestamp = function(currentTime, contentId) {
     const content = document.getElementById(contentId);
     const timestamps = content.querySelectorAll('.timestamp');
+    const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
 
     timestamps.forEach((timestamp) => {
         const time = parseTimestampToSeconds(timestamp.getAttribute('data-timestamp'));
         if (Math.abs(currentTime - time) < 2) {  // Check if the current time matches within 2 seconds
             clearHighlight(contentId);  // Clear previous highlights
-            timestamp.classList.add('highlight');
-            timestamp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Get the text node containing the timestamp
+            const textNode = timestamp.parentNode;
+            const textContent = textNode.textContent;
+
+            // Find the position of the timestamp in the text
+            const timestampIndex = textContent.indexOf(timestamp.textContent);
+
+            // Calculate the start and end indices for highlighting
+            const start = Math.max(0, timestampIndex - 100);
+            const end = Math.min(textContent.length, timestampIndex + timestamp.textContent.length + 100);
+
+            // Highlight the range
+            const highlightedText = textContent.substring(start, end);
+            const beforeHighlight = textContent.substring(0, start);
+            const afterHighlight = textContent.substring(end);
+
+            // Update the text node with highlighted content
+            textNode.innerHTML = `${beforeHighlight}<span class="highlight">${highlightedText}</span>${afterHighlight}`;
+
+            // Reattach event listeners to timestamps
+            addTimestampListeners();
+
+            // Scroll the highlighted text into view
+            textNode.querySelector('.highlight').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Remove highlight after 5 seconds
+            setTimeout(() => {
+                clearHighlight(contentId);
+                displayRawTextWithTimestamps(rawTextContent);
+
+                addTimestampListeners(); // Reattach listeners after clearing highlight
+            }, 5000);
         }
     });
 }
@@ -753,7 +839,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('http://127.0.0.1:5000/process-corrected-text', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -781,7 +867,7 @@ function processCorrectedText(correctedText) {
 
 function askQuestion(question) {
     displayMessage('system');
-    fetch('http://127.0.0.1:5000/ask-question', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -876,6 +962,7 @@ function downloadText(elementId, filename) {
 
 window.onload = function() {
     fetchDefaultPrompt();
+    initializePage();
 };
 
 // Function to fetch the default prompt from the Flask backend
@@ -902,7 +989,7 @@ function toggleDefaultPrompt() {
 
 // Function to fetch the default prompt from the Flask backend
 function fetchDefaultPrompt() {
-    fetch('http://127.0.0.1:5000/default-prompt')
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
         .then(response => response.json())
         .then(data => {
             // Set the default prompt in the display area
@@ -967,7 +1054,7 @@ function generateQAOneLinerSummary() {
     const formData = new FormData();
     formData.append('text', rawTextContent);
 
-    fetch('http://127.0.0.1:5000/qa_one_liner_summary', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_one_liner_summary', {
         method: 'POST',
         body: formData,
     })
@@ -1142,4 +1229,72 @@ function downloadFullContent() {
     link.download = 'full_content.txt';
     link.click();
     URL.revokeObjectURL(link.href);
+}
+
+
+function addCategoryCheckboxListeners() {
+    document.querySelectorAll('.category-checkbox').forEach(categoryCheckbox => {
+        categoryCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            const categoryDiv = this.closest('.category-summary');
+            categoryDiv.querySelectorAll('.one-liner-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        });
+    });
+}
+
+function displayRawTextWithTimestamps(textWithTimestamps) {
+    const rawTextContent = document.getElementById('rawTextContent');
+    const formattedText = textWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+    rawTextContent.innerHTML = formattedText;
+
+    // Attach event listeners to timestamps
+    addTimestampListeners();
+}
+
+
+
+// Function to format text with clickable timestamps
+function formatTextWithTimestamps(text) {
+    return text.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+}
+
+function parseTimestampToSecond(timestamp) {
+    const parts = timestamp.slice(1, -1).split(':'); // Removes the [ ] and splits the minutes and seconds
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    return minutes * 60 + seconds;
+}
+
+function initializePage() {
+    // Your initialization code here
+    console.log('Page has loaded. Initializing...');
+
+    // Example: Fetch available options for dropdowns
+    fetchAvailableOptions();
+}
+
+function fetchAvailableOptions() {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/get_available_options')
+        .then(response => response.json())
+        .then(data => {
+            populateDropdown('companyName', data.companies);
+            populateDropdown('quarter', data.quarters);
+        })
+        .catch(error => {
+            console.error('Error fetching options:', error);
+            alert('Failed to load options. Please try again later.');
+        });
+}
+
+function populateDropdown(dropdownId, options) {
+    const dropdown = document.getElementById(dropdownId);
+    dropdown.innerHTML = ''; // Clear existing options
+    options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option;
+        opt.textContent = option;
+        dropdown.appendChild(opt);
+    });
 }
