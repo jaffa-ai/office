@@ -467,31 +467,31 @@ window.toggleFewShots = function() {
 // Function to render the summary with clickable timestamps
 window.displaySummaryWithTimestamps = function(summaryWithTimestamps) {
     const summaryContent = document.getElementById('summaryContent');
-    const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
-    const lines = formattedSummary.split('\n'); // Split the summary into lines
-    summaryContent.innerHTML = ''; // Clear previous content
 
-    // Function to display each line with a delay
-    function displayLineByLine(index) {
-        if (index < lines.length) {
-            summaryContent.innerHTML += lines[index] + '<br>';
-            setTimeout(() => displayLineByLine(index + 1), 100); // Adjust the delay as needed
-        }
-    }
+    // Replace markdown-like elements with HTML tags
+    let formattedSummary = summaryWithTimestamps
+        .replace(/^## (.*$)/gim, '<h3>$1</h3>') // Convert ## headings to <h3>
+        .replace(/^### (.*$)/gim, '<h4>$1</h4>') // Convert ### headings to <h4>
+        .replace(/^\- (.*$)/gim, '<li>$1</li>') // Convert list items
+        .replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>') // Convert timestamps
+        .replace(/<\/li>\n<li>/gim, '</li><li>'); // Remove newlines between list items
 
-    displayLineByLine(0); // Start displaying lines
+    // Wrap list items in <ul> tags
+    formattedSummary = formattedSummary.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
 
-    // Add event listeners to play audio from the clicked timestamp in the summary
-    summaryContent.addEventListener('click', function(event) {
-        if (event.target.classList.contains('timestamp')) {
-            const timestamp = event.target.getAttribute('data-timestamp');
+    summaryContent.innerHTML = formattedSummary;
+
+    // Add event listeners to play audio from the clicked timestamp
+    summaryContent.querySelectorAll('.timestamp').forEach(el => {
+        el.addEventListener('click', function() {
+            const timestamp = this.getAttribute('data-timestamp');
             const seconds = parseTimestampToSeconds(timestamp);
             const audioPlayer = document.getElementById('audioPlayer');
             audioPlayer.currentTime = seconds;
-            audioPlayer.play();  // Start playing from the clicked timestamp
-        }
+            audioPlayer.play();
+        });
     });
-}
+};
 //     const summaryContent = document.getElementById('summaryContent');
 //     const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
 //     summaryContent.innerHTML = formattedSummary;
@@ -861,16 +861,25 @@ function processCorrectedText(correctedText) {
 }
 
 function askQuestion(question) {
-    displayMessage('system');
+    
+    const companyName = document.getElementById('companyName').value.trim();
+        const quarter = document.getElementById('quarter').value.trim();
+
+       
     fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            question: question
+            question: question,
+            company_name: companyName,
+            quarter: quarter
+
+
         })
     })
+    
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -880,7 +889,7 @@ function askQuestion(question) {
     .then(data => {
         if (data.response) {
             displayResponse(data.response);
-        } else if (data.error) {
+        } else if (data.error) {    
             console.error('Error from server:', data.error);
             displayMessage(`Error: ${data.error}`, 'system');
         } else {
@@ -893,6 +902,15 @@ function askQuestion(question) {
         displayMessage(`An error occurred: ${error.message}. Please try again.`, 'system');
     });
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const processTextBtn = document.getElementById('processTextBtn');
+    if (processTextBtn) {
+        processTextBtn.addEventListener('click', function() {
+            const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
+            processCorrectedText(rawTextContent);
+        });
+    }
+});
 
 function sendMessage() {
     const chatInput = document.getElementById('chatInput');
@@ -905,28 +923,45 @@ function sendMessage() {
     
     displayMessage(message, 'user');
     
-    if (!correctedTextProcessed) { 
-        processCorrectedText(rawTextContent);
-    } else {
+   
         askQuestion(message);
-    }
+    
     
     chatInput.value = '';
 }
 
+// Update the displayMessage function
 function displayMessage(message, sender) {
     const chatBox = document.getElementById('chatBox');
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', sender);
-    messageElement.innerText = message;
+
+    if (sender === 'system') {
+        // Use an icon for system messages
+        const icon = document.createElement('i');
+        icon.classList.add('fas', 'fa-robot'); // Font Awesome robot icon
+        messageElement.appendChild(icon);
+        messageElement.appendChild(document.createTextNode(` ${message}`));
+    } else {
+        const messageContent = document.createElement('p');
+        messageContent.innerText = message;
+        messageElement.appendChild(messageContent);
+
+        const copyIcon = document.createElement('i');
+        copyIcon.classList.add('fas', 'fa-copy', 'copy-icon');
+        copyIcon.title = 'Copy this message';
+        copyIcon.onclick = () => copyToClipboard(message);
+        messageElement.appendChild(copyIcon);
+    }
+
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+// Update the displayResponse function
 function displayResponse(response) {
     displayMessage(response, 'ai');
 }
-
 // No need for DOMContentLoaded event listener since you're using inline onclick
 
 // You may want to add this event listener for pressing Enter in the input field
