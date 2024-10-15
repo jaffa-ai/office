@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/opening_remarks_summary', {
+        fetch('http://127.0.0.1:5000/opening_remarks_summary', {
             method: 'POST',
             body: formData
         })
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_summary', {
+        fetch('http://127.0.0.1:5000/qa_summary', {
             method: 'POST',
             body: formData
         })
@@ -80,13 +80,19 @@ document.addEventListener('DOMContentLoaded', function() {
  
  
         let currentCategory = '';
- 
+    let categoryContent = '';
+
     lines.forEach(line => {
         if (line.startsWith('##')) {
             if (currentCategory) {
-                content += `</div>`; // Close previous category div
+                content += `
+                    <div class="category-content" style="display: none;">
+                        ${categoryContent}
+                    </div>
+                </div>`; // Close previous category div
             }
             currentCategory = line.substring(2).trim();
+            categoryContent = ''; // Reset category content for new category
             content += `
                 <div class="category-summary">
                     <h3>
@@ -95,19 +101,38 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         } else if (line.startsWith('-')) {
             const formattedLine = line.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
-    content += `
-        <div>
-            <input type="checkbox" class="one-liner-checkbox" data-content="${line.trim()}">
-            ${formattedLine.trim().substring(1).trim()} <!-- Remove the dash -->
-        </div>
-        <br>
-    `;
+            categoryContent += `
+                <div>
+                    <input type="checkbox" class="one-liner-checkbox" data-content="${line.trim()}">
+                    ${formattedLine.trim().substring(1).trim()} <!-- Remove the dash -->
+                </div>
+                <br>
+            `;
         }
     });
+
+    if (currentCategory) {
+        content += `
+            <div class="category-content" style="display: none;">
+            
+
+                ${categoryContent}
+
+            </div>
+        </div>`;
+    }
          
  
         oneLinerSummaryContent.innerHTML = content;
         addCategoryCheckboxListeners(); // Attach listeners to category checkboxes
+
+
+        document.querySelectorAll('.category-summary h3').forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            });
+        });
  
  
         // Add event listeners to play audio from the clicked timestamp
@@ -289,7 +314,7 @@ window.startProcessing = function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
+        fetch('http://127.0.0.1:5000/process', {
             method: 'POST',
             body: formData
         })
@@ -350,15 +375,11 @@ window.setAudioSource = function(encodedAudio) {
     console.log('Setting audio source with encoded data'); // Debugging statement
     const audioSource = document.getElementById('audioSource');
 
-    // Decode base64 to binary string
+    // Decode base64 to binary string using atob
     const binaryString = atob(encodedAudio);
 
-    // Convert binary string to array buffer
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
+    // Convert binary string to array buffer using a more efficient method
+    const bytes = Uint8Array.from(binaryString, char => char.charCodeAt(0));
 
     // Create a Blob from the array buffer
     const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
@@ -378,6 +399,8 @@ window.iso88591ToBlob = function(encoded, mime) {
     const byteArray = new Uint8Array(byteCharacters);
     return new Blob([byteArray], { type: mime });
 }
+
+
 
 // Function to convert timestamps to seconds
 window.parseTimestampToSeconds = function(timestamp) {
@@ -442,7 +465,7 @@ window.generateSummary = function() {
         formData.append('few_shots', fewShots);
     }
 
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
+    fetch('http://127.0.0.1:5000/summarize', {
         method: 'POST',
         body: formData
     })
@@ -467,21 +490,9 @@ window.toggleFewShots = function() {
 // Function to render the summary with clickable timestamps
 window.displaySummaryWithTimestamps = function(summaryWithTimestamps) {
     const summaryContent = document.getElementById('summaryContent');
-
-    // Replace markdown-like elements with HTML tags
-    let formattedSummary = summaryWithTimestamps
-        .replace(/^## (.*$)/gim, '<h3>$1</h3>') // Convert ## headings to <h3>
-        .replace(/^### (.*$)/gim, '<h4>$1</h4>') // Convert ### headings to <h4>
-        .replace(/^\- (.*$)/gim, '<li>$1</li>') // Convert list items
-        .replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>') // Convert timestamps
-        .replace(/<\/li>\n<li>/gim, '</li><li>'); // Remove newlines between list items
-
-    // Wrap list items in <ul> tags
-    formattedSummary = formattedSummary.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
-
+    const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
     summaryContent.innerHTML = formattedSummary;
-
-    // Add event listeners to play audio from the clicked timestamp
+    
     summaryContent.querySelectorAll('.timestamp').forEach(el => {
         el.addEventListener('click', function() {
             const timestamp = this.getAttribute('data-timestamp');
@@ -492,20 +503,11 @@ window.displaySummaryWithTimestamps = function(summaryWithTimestamps) {
         });
     });
 };
-//     const summaryContent = document.getElementById('summaryContent');
-//     const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
-//     summaryContent.innerHTML = formattedSummary;
 
-//     // Add event listeners to play audio from the clicked timestamp in the summary
-//     summaryContent.addEventListener('click', function(event) {
-//         if (event.target.classList.contains('timestamp')) {
-//             const timestamp = event.target.getAttribute('data-timestamp');
-//             const seconds = parseTimestampToSeconds(timestamp);
-//             const audioPlayer = document.getElementById('audioPlayer');
-//             audioPlayer.currentTime = seconds;
-//             audioPlayer.play();  // Start playing from the clicked timestamp
-//         }
-//     });
+    // Add event listeners to play audio from the clicked timestamp in the summary
+    
+
+    
 
 
 
@@ -528,7 +530,7 @@ audioPlayer.addEventListener('timeupdate', () => {
 
     // Highlight and auto-scroll in Raw Text, Summary, and Q&A sections
     highlightTextBasedOnTimestamp(currentTime, 'rawTextContent');
-    highlightTextBasedOnTimestamp(currentTime, 'summaryContent');
+    // highlightTextBasedOnTimestamp(currentTime, 'summaryContent');
     highlightTextBasedOnTimestamp(currentTime, 'qaContent');
 });
 
@@ -551,8 +553,8 @@ window.highlightTextBasedOnTimestamp = function(currentTime, contentId) {
             const timestampIndex = textContent.indexOf(timestamp.textContent);
 
             // Calculate the start and end indices for highlighting
-            const start = Math.max(0, timestampIndex - 100);
-            const end = Math.min(textContent.length, timestampIndex + timestamp.textContent.length + 100);
+            const start = Math.max(0, timestampIndex - 0);
+            const end = Math.min(textContent.length, timestampIndex + timestamp.textContent.length + 200);
 
             // Highlight the range
             const highlightedText = textContent.substring(start, end);
@@ -574,7 +576,7 @@ window.highlightTextBasedOnTimestamp = function(currentTime, contentId) {
                 displayRawTextWithTimestamps(rawTextContent);
 
                 addTimestampListeners(); // Reattach listeners after clearing highlight
-            }, 5000);
+            }, 11000);
         }
     });
 }
@@ -834,7 +836,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
+    fetch('http://127.0.0.1:5000/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -866,7 +868,7 @@ function askQuestion(question) {
         const quarter = document.getElementById('quarter').value.trim();
 
        
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
+    fetch('http://127.0.0.1:5000/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -1019,7 +1021,7 @@ function toggleDefaultPrompt() {
 
 // Function to fetch the default prompt from the Flask backend
 function fetchDefaultPrompt() {
-    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
+    fetch('http://127.0.0.1:5000/default-prompt')
         .then(response => response.json())
         .then(data => {
             // Set the default prompt in the display area
@@ -1321,10 +1323,32 @@ function fetchAvailableOptions() {
 function populateDropdown(dropdownId, options) {
     const dropdown = document.getElementById(dropdownId);
     dropdown.innerHTML = ''; // Clear existing options
+
+    // Add a non-selectable default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = dropdownId === 'companyName' ? 'Select Company' : 'Select Quarter';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    dropdown.appendChild(defaultOption);
+
+    // Add the dynamic options
     options.forEach(option => {
         const opt = document.createElement('option');
         opt.value = option;
         opt.textContent = option;
         dropdown.appendChild(opt);
+    });
+}
+
+function addTimestampClickListeners(container) {
+    container.querySelectorAll('.timestamp').forEach(el => {
+        el.addEventListener('click', function() {
+            const timestamp = this.getAttribute('data-timestamp');
+            const seconds = parseTimestampToSeconds(timestamp);
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.currentTime = seconds;
+            audioPlayer.play();
+        });
     });
 }
