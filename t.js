@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('http://127.0.0.1:5000/opening_remarks_summary', {
+        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/opening_remarks_summary', {
             method: 'POST',
             body: formData
         })
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('http://127.0.0.1:5000/qa_summary', {
+        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/qa_summary', {
             method: 'POST',
             body: formData
         })
@@ -314,7 +314,7 @@ window.startProcessing = function() {
         formData.append('company_name', companyName);
         formData.append('quarter', quarter);
 
-        fetch('http://127.0.0.1:5000/process', {
+        fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
             method: 'POST',
             body: formData
         })
@@ -465,7 +465,7 @@ window.generateSummary = function() {
         formData.append('few_shots', fewShots);
     }
 
-    fetch('http://127.0.0.1:5000/summarize', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
         body: formData
     })
@@ -836,7 +836,7 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
-    fetch('http://127.0.0.1:5000/process-corrected-text', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -868,7 +868,7 @@ function askQuestion(question) {
         const quarter = document.getElementById('quarter').value.trim();
 
        
-    fetch('http://127.0.0.1:5000/ask-question', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/ask-question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -1021,7 +1021,7 @@ function toggleDefaultPrompt() {
 
 // Function to fetch the default prompt from the Flask backend
 function fetchDefaultPrompt() {
-    fetch('http://127.0.0.1:5000/default-prompt')
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
         .then(response => response.json())
         .then(data => {
             // Set the default prompt in the display area
