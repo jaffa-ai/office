@@ -148,14 +148,19 @@
                 
                 
                 
-                <div id="OneLinerSummary" class="tabcontent">
-                    <h2>Detailed Summary</h2>
-                    <button onclick="fetchOpeningRemarksSummary()">Opening Remarks</button>
-                    <button onclick="fetchQASummary()">Q&A</button>
-                    <div id="oneLinerSummaryContent"></div>
-                    <button onclick="copySelectedOneLiners()">Copy Selected</button>
-                    <button onclick="downloadSelectedOneLiners()">Download Selected</button>
-                </div>
+<div id="OneLinerSummary" class="tabcontent">
+    <h2>Detailed Summary</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <button onclick="fetchOpeningRemarksSummary()">Opening Remarks</button>
+            <button onclick="fetchQASummary()">Q&A</button>
+        </div>
+        <!-- <button id="downloadCSVButton" class="btn btn-secondary" onclick="downloadCSV()">Download Categories</button> -->
+    </div>
+    <div id="oneLinerSummaryContent"></div>
+    <button onclick="copySelectedOneLiners()">Copy Selected</button>
+    <button onclick="downloadSelectedOneLiners()">Download Selected</button>
+</div>
             
                
 <!--                 
@@ -192,7 +197,7 @@
                             <button id="processTextBtn" class="btn btn-primary">Process Text</button>
            
                             <input type="text" id="chatInput" placeholder="Type your question here...">
-                            <button class="send-btn" onclick="sendMessage()">
+                            <button class="send-bt" onclick="sendMessage()">
                                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="22" y1="2" x2="11" y2="13"></line>
                                     <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>

@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch and display the Q&A summary
     window.fetchQASummary = function() {
+        
         const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
         const companyName = document.getElementById('companyName').value.trim();
         const quarter = document.getElementById('quarter').value.trim();
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.summary) {
+                
                 displayOneLinerSummary(data.summary);
             } else if (data.error) {
                 console.error('Error fetching summary:', data.error);
@@ -82,6 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentCategory = '';
     let categoryContent = '';
 
+    content += `
+        <div>
+            <input type="checkbox" id="selectAllCheckbox"> Select All
+        </div>
+        <br>
+    `;
+
     lines.forEach(line => {
         if (line.startsWith('##')) {
             if (currentCategory) {
@@ -99,25 +108,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="checkbox" class="category-checkbox"> ${currentCategory}
                     </h3>
             `;
-        } else if (line.startsWith('-')) {
+        } else if (line.trim()) { // Check for non-empty lines
             const formattedLine = line.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
             categoryContent += `
                 <div>
                     <input type="checkbox" class="one-liner-checkbox" data-content="${line.trim()}">
-                    ${formattedLine.trim().substring(1).trim()} <!-- Remove the dash -->
+                    ${formattedLine.trim()} <!-- No dash to remove -->
                 </div>
                 <br>
             `;
         }
     });
-
+    
     if (currentCategory) {
         content += `
             <div class="category-content" style="display: none;">
-            
-
                 ${categoryContent}
-
             </div>
         </div>`;
     }
@@ -125,7 +131,14 @@ document.addEventListener('DOMContentLoaded', function() {
  
         oneLinerSummaryContent.innerHTML = content;
         addCategoryCheckboxListeners(); // Attach listeners to category checkboxes
-
+        
+        document.getElementById('selectAllCheckbox').addEventListener('change', function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.category-checkbox, .one-liner-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        });
+    
 
         document.querySelectorAll('.category-summary h3').forEach(header => {
             header.addEventListener('click', function() {
@@ -214,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         wavesurfer = WaveSurfer.create({
             container: waveformContainer,
-            waveColor: '#c1bfed',
+            waveColor: '#9AD8EB',
             progressColor: '#1c2f50',
             backend: 'MediaElement',
             height: 80,
@@ -307,9 +320,8 @@ window.startProcessing = function() {
 
     if (companyName && quarter) {
         // Show loading spinner
+        //showLoadingSpinner();
         showLoadingSpinner();
-
-
 
         // Prepare the form data to send in the request
         const formData = new FormData();
@@ -332,6 +344,7 @@ window.startProcessing = function() {
         })
         .then(data => {
             console.log('Data received:', data); // Debugging statement
+            //hideLoadingSpinner();
             hideLoadingSpinner();
 
             if (data.corrected_text && data.audio_file) {
@@ -424,6 +437,7 @@ window.displayRawTextWithTimestamps = function(textWithTimestamps) {
 // Function to show the loading spinner
 window.showLoadingSpinner = function() {
     document.getElementById("loader").style.display = "flex";
+   
     document.getElementById('uploadPage').classList.add('blur-content');
 }
 
@@ -467,6 +481,7 @@ window.generateSummary = function() {
     if (fewShots) {
         formData.append('few_shots', fewShots);
     }
+    
 
     fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
@@ -474,6 +489,7 @@ window.generateSummary = function() {
     })
     .then(response => response.json())
     .then(data => {
+        
         if (data.summary) {
             displaySummaryWithTimestamps(data.summary);
         } else if (data.error) {
@@ -493,9 +509,22 @@ window.toggleFewShots = function() {
 // Function to render the summary with clickable timestamps
 window.displaySummaryWithTimestamps = function(summaryWithTimestamps) {
     const summaryContent = document.getElementById('summaryContent');
-    const formattedSummary = summaryWithTimestamps.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+    const lines = summaryWithTimestamps.split('\n');
+    let formattedSummary = '';
+
+    lines.forEach(line => {
+        if (line.startsWith('##')) {
+            // Handle category headers
+            formattedSummary += `<h3>${line.substring(2).trim()}</h3>`;
+        } else if (line.trim()) {
+            // Handle one-liner summaries with timestamps
+            const formattedLine = line.replace(/\[(\d{2}:\d{2})\]/g, '<span class="timestamp" data-timestamp="[$1]">[$1]</span>');
+            formattedSummary += `<p>${formattedLine.trim()}</p>`;
+        }
+    });
+
     summaryContent.innerHTML = formattedSummary;
-    
+
     summaryContent.querySelectorAll('.timestamp').forEach(el => {
         el.addEventListener('click', function() {
             const timestamp = this.getAttribute('data-timestamp');
@@ -839,18 +868,22 @@ let correctedTextProcessed = false;
 
 function processCorrectedText(correctedText) {
     displayMessage("Processing text...", 'system');
+    const companyName = document.getElementById('companyName').value.trim();
+    const quarter = document.getElementById('quarter').value.trim();
     fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process-corrected-text', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            corrected_text: correctedText
+            corrected_text: correctedText,
+            company_name: companyName,
+            quarter: quarter
         })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.message === 'Corrected text processed and stored successfully') {
+        if (data.message === 'Retrievers initialized successfully.') {
             correctedTextProcessed = true;
             console.log('Corrected text processed successfully');
             displayMessage("Text processed successfully. You can now ask questions.", 'system');
@@ -1355,3 +1388,28 @@ function addTimestampClickListeners(container) {
         });
     });
 }
+
+function downloadCSV() {
+    window.location.href = 'http://127.0.0.1:5000/download-categories';
+}
+
+// function showLoadingSpinner() {
+//     document.getElementById('loadingSpinner').style.display = 'block';
+//     document.getElementById('uploadPage').classList.add('blur-content');
+// }
+
+// function hideLoadingSpinner() {
+//     document.getElementById('loadingSpinner').style.display = 'none';
+//     //document.getElementById('uploadPage').classList.remove('blur-content');
+// }
+
+// function showLoader() {
+//     document.getElementById('loader').style.display = 'block';
+//     document.getElementById('resultPage').classList.add('blur-content');
+// }
+
+// function hideLoader() {
+//     document.getElementById('loader').style.display = 'none';
+//     document.getElementById('resultPage').classList.remove('blur-content');
+// }
+
