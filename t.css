@@ -1028,3 +1028,43 @@ background-color: #3a7bc8;}
     color: rgb(188, 148, 109); /* Change the text color to red or any color you prefer */
     font-weight: bold; /* or any color you prefer */
 }
+
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.8); /* Light background */
+    position: fixed; /* Fixed to cover the entire viewport */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000; /* Ensures the loader is above other content */
+}
+
+.loader {
+    padding: 20px 40px;
+    background-color: rgba(19, 57, 104, 0.1); /* Light blue background */
+    border: 2px solid rgba(0, 123, 255, 0.4); /* Blue border */
+    border-radius: 10px;
+    position: relative;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: rgba(0, 123, 255, 0.8);
+    animation: blink 1.5s infinite ease-in-out;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+.blur-content {
+    filter: blur(1px); /* Further reduced blur for better readability */
+    transition: filter 0.5s ease-in-out; /* Smooth transition */
+}

@@ -309,6 +309,8 @@ window.startProcessing = function() {
         // Show loading spinner
         showLoadingSpinner();
 
+
+
         // Prepare the form data to send in the request
         const formData = new FormData();
         formData.append('company_name', companyName);
@@ -421,12 +423,13 @@ window.displayRawTextWithTimestamps = function(textWithTimestamps) {
 
 // Function to show the loading spinner
 window.showLoadingSpinner = function() {
-    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById("loader").style.display = "flex";
+    document.getElementById('uploadPage').classList.add('blur-content');
 }
 
 // Function to hide the loading spinner
 window.hideLoadingSpinner = function() {
-    document.getElementById('loadingSpinner').style.display = 'none';
+    document.getElementById('loader').style.display = 'none';
 }
 
 // Function to switch to the result page after processing
