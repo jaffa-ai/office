@@ -1027,10 +1027,11 @@ background-color: #3a7bc8;}
 
 
 .highlight {
-    font-family: 'Roboto', sans-serif; /* Ensure buttons use the same font */
-   
-    color: rgb(188, 148, 109); /* Change the text color to red or any color you prefer */
-    font-weight: bold; /* or any color you prefer */
+    background-color: yellow;
+    
+    
+    
+    
 }
 
 .loader-container {
@@ -1073,3 +1074,28 @@ background-color: #3a7bc8;}
     filter: blur(2px); /* Further reduced blur for better readability */
     transition: filter 0.5s ease-in-out; /* Smooth transition */
 }
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+.summary-table th, .summary-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+.summary-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.summary-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+
+

@@ -132,6 +132,8 @@
     </div>
     
     <div id="summaryContent" class="summary-content"></div>
+    <!-- Add this button to your result page HTML -->
+<button id="fullscreenBtn" class="btn btn-secondary">    <i class="fas fa-search-plus"></i></button>
     
     <div class="button-group">
         <button class="btn btn-secondary" onclick="copyText('summaryContent')">Copy Summary</button>
@@ -190,11 +192,11 @@
                     <div id="chatContainer">
                         <div id="chatBox">
                             <div class="message system">
-                                Hi there! Click "Process Text" and I can answer any questions related to the transcript. How may I assist you today?
+                                Hi there! I can answer any questions related to the transcript. How may I assist you today?
                             </div>
                         </div>
                         <div id="chatInputContainer">
-                            <button id="processTextBtn" class="btn btn-primary">Process Text</button>
+                            
            
                             <input type="text" id="chatInput" placeholder="Type your question here...">
                             <button class="send-bt" onclick="sendMessage()">
