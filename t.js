@@ -491,7 +491,7 @@ window.generateSummary = function() {
     }
     
 
-    fetch('http://localhost:5000/summarize', {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/summarize', {
         method: 'POST',
         body: formData
     })
