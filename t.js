@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('company_name', companyName);
             formData.append('quarter', quarter);
     
-            fetch('http://localhost:5000/process', {
+            fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/process', {
                 method: 'POST',
                 body: formData
             })
@@ -1063,7 +1063,7 @@ function toggleDefaultPrompt() {
 
 // Function to fetch the default prompt from the Flask backend
 function fetchDefaultPrompt() {
-    fetch('http://localhost:5000/default-prompt')
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/default-prompt')
         .then(response => response.json())
         .then(data => {
             // Set the default prompt in the display area
