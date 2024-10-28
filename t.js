@@ -618,46 +618,57 @@ window.highlightTextBasedOnTimestamp = function(currentTime, contentId) {
     const timestamps = content.querySelectorAll('.timestamp');
     const rawTextContent = document.getElementById('rawTextContent').textContent.trim();
 
-    timestamps.forEach((timestamp) => {
+    let highlighted = false;
+
+    timestamps.forEach((timestamp, index) => {
         const time = parseTimestampToSeconds(timestamp.getAttribute('data-timestamp'));
-        if (Math.abs(currentTime - time) < 2) {  // Check if the current time matches within 2 seconds
-            clearHighlight(contentId);  // Clear previous highlights
+        let nextTime = Infinity; // Default to a large number if there's no next timestamp
 
-            // Get the text node containing the timestamp
-            const textNode = timestamp.parentNode;
-            const textContent = textNode.textContent;
+        if (index + 1 < timestamps.length) {
+            nextTime = parseTimestampToSeconds(timestamps[index + 1].getAttribute('data-timestamp'));
+        }
 
-            // Find the position of the timestamp in the text
-            const timestampIndex = textContent.indexOf(timestamp.textContent);
+        if (currentTime >= time && currentTime < nextTime) {  // Check if current time is between this and the next timestamp
+            if (!highlighted) {
+                clearHighlight(contentId);  // Clear previous highlights
 
-            // Calculate the start and end indices for highlighting
-            const start = Math.max(0, timestampIndex - 0);
-            const end = Math.min(textContent.length, timestampIndex + timestamp.textContent.length + 200);
+                // Get the text node containing the timestamp
+                const textNode = timestamp.parentNode;
+                const textContent = textNode.innerHTML; // Use innerHTML to preserve HTML structure
 
-            // Highlight the range
-            const highlightedText = textContent.substring(start, end);
-            const beforeHighlight = textContent.substring(0, start);
-            const afterHighlight = textContent.substring(end);
+                // Find the position of the current timestamp in the text
+                const timestampIndex = textContent.indexOf(timestamp.outerHTML);
 
-            // Update the text node with highlighted content
-            textNode.innerHTML = `${beforeHighlight}<span class="highlight">${highlightedText}</span>${afterHighlight}`;
+                // Find the position of the next timestamp
+                let end = textContent.length; // Default to the end of the text
+                if (index + 1 < timestamps.length) {
+                    const nextTimestamp = timestamps[index + 1];
+                    const nextTimestampIndex = textContent.indexOf(nextTimestamp.outerHTML);
+                    if (nextTimestampIndex !== -1) {
+                        end = nextTimestampIndex;
+                    }
+                }
 
-            // Reattach event listeners to timestamps
-            addTimestampListeners();
+                // Highlight the range
+                const highlightedText = textContent.substring(timestampIndex, end);
+                const beforeHighlight = textContent.substring(0, timestampIndex);
+                const afterHighlight = textContent.substring(end);
 
-            // Scroll the highlighted text into view
-            textNode.querySelector('.highlight').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Update the text node with highlighted content
+                textNode.innerHTML = `${beforeHighlight}<span class="highlight">${highlightedText}</span>${afterHighlight}`;
 
-            // Remove highlight after 5 seconds
-            setTimeout(() => {
-                clearHighlight(contentId);
-                displayRawTextWithTimestamps(rawTextContent);
+                // Reattach event listeners to timestamps
+                addTimestampListeners();
 
-                addTimestampListeners(); // Reattach listeners after clearing highlight
-            }, 11000);
+                // Scroll the highlighted text into view
+                textNode.querySelector('.highlight').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                highlighted = true;
+            }
         }
     });
 }
+
 
 // Function to clear previous highlights
 window.clearHighlight = function(contentId) {
@@ -1403,3 +1414,30 @@ document.addEventListener('DOMContentLoaded', () => {
         fullscreenBtn.addEventListener('click', toggleFullScreen);
     }
 });
+
+document.getElementById('clearChatBtn').addEventListener('click', clearChatHistory);
+
+function clearChatHistory() {
+    fetch('https://audiotranscriptsummarizer-a7erbkb8ftbmdghf.eastus-01.azurewebsites.net/reset-chat-history', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            // Clear the chat box content
+            document.getElementById('chatBox').innerHTML = '';
+            alert('Chat history cleared successfully.');
+        } else {
+            alert('Failed to clear chat history.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while clearing chat history.');
+    });
+}
+
