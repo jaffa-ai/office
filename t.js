@@ -1323,7 +1323,8 @@ function fetchAvailableOptions() {
         .then(response => response.json())
         .then(data => {
             populateDropdown('companyName', data.companies);
-            populateDropdown('quarter', data.quarters);
+            // Store company quarters for later use
+            window.companyQuarters = data.company_quarters;
         })
         .catch(error => {
             console.error('Error fetching options:', error);
@@ -1350,8 +1351,15 @@ function populateDropdown(dropdownId, options) {
         opt.textContent = option;
         dropdown.appendChild(opt);
     });
-}
 
+    // Add event listener to populate quarters when a company is selected
+    if (dropdownId === 'companyName') {
+        dropdown.addEventListener('change', function() {
+            const selectedCompany = this.value;
+            populateDropdown('quarter', window.companyQuarters[selectedCompany] || []);
+        });
+    }
+}
 function addTimestampClickListeners(container) {
     container.querySelectorAll('.timestamp').forEach(el => {
         el.addEventListener('click', function() {
