@@ -10,6 +10,7 @@
     <title>Audio Transcript Interface</title>
     <link rel="stylesheet" href="t.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.21.0/tabler-icons.min.css" integrity="sha512-XrgoTBs7P5YtpkeKqKOKkruURsawIaRrhe8QrcWeMnFeyRZiOcRNjBAX+AQeXOvx9/9fSY32dVct1PccRoCICQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 
@@ -64,8 +65,8 @@
             <div id="waveform" class="center-waveform"></div>
             <div class="audio-controls">
                 <div class="backward-buttons">
-                    <button id="skipBackward30">-30s</button>
-                    <button id="skipBackward15">-15s</button>
+                    <button id="skipBackward30"><i class="ti ti-rewind-backward-30"></i></button>
+                    <button id="skipBackward15"><i class="ti ti-rewind-backward-15"></i></button>
                 </div>
                 <div class="audio-player-inner">
                     <audio id="audioPlayer">
@@ -74,8 +75,8 @@
                     </audio>
                 </div>
                 <div class="forward-buttons">
-                    <button id="skipForward15">+15s</button>
-                    <button id="skipForward30">+30s</button>
+                    <button id="skipForward15"><i class="ti ti-rewind-forward-15"></i></button>
+                    <button id="skipForward30"><i class="ti ti-rewind-forward-30"></i></button>
                 </div>
             </div>
         </div>
@@ -83,10 +84,20 @@
         <div class="content-wrapper">
             <!-- Raw Text Section -->
             <div class="raw-text" id="rawText">
-                <h2>Raw Text</h2>
+                <div id="rawTextCopyDownloadIcons">
+                    <div class="" onclick="syncRawTextAudio()"><i class="fa-solid fa-arrows-rotate"></i></div>
+                    <div onclick="copyText('rawTextContent')"><i class="fa-solid fa-copy"></i></div>
+                    <div onclick="downloadText('rawTextContent', 'rawtext.txt')"><i class="fa-solid fa-download"></i></div>
+                </div>
+                <div class="TranscriptAccordion">
+                    <h2 id="rawTextHeading">Transcript</h2>
+                    <i onclick="transcriptAccordionToggle()" id="TranscriptAccordionDownIcon" class="fa-solid fa-caret-up"></i>
+                </div>
                 <div id="rawTextContent">This is the raw transcript text...</div>
-                <button onclick="copyText('rawTextContent')">Copy Raw Text</button>
-                <button onclick="downloadText('rawTextContent', 'rawtext.txt')">Download Raw Text</button>
+                <div id="scrollToTopIcon" onclick="scrollToTheTop('raw-text')" >
+                    <i id="scrollToTopIconTag" class="fa-solid fa-angles-up"></i>
+                    <span class="ScrollToTopTooltip">Scroll to Top</span>
+                </div>
             </div>
 
             <div class="tabs-section">
@@ -103,17 +114,33 @@
                 <!-- Summary Section -->
 <div id="Summary" class="tabcontent">
     <div class="summary-header">
-        <h2>Simple Summary</h2>
-        <div class="summary-controls">
+        <div class="summary-controls" style="margin-left: auto;">
             <button id="showDefaultPromptBtn" class="btn btn-secondary" onclick="toggleDefaultPrompt()">Instructions</button>
             <button id="fewShotsBtn" class="btn btn-secondary" onclick="toggleFewShots()">Few-Shot Examples</button>
         </div>
     </div>
+
+    <div id="InstructionModal" class="InstructionsModal">
+        <div class="modal-content">
+            <button id="hideInstructions" class="btn btn-secondary" onclick="toggleDefaultPrompt()">Hide Instructions</button>
+            <div id="defaultPromptDisplay" class="prompt-display"></div>
+            <button id="customizeBtn" class="btn btn-primary" onclick="enableCustomization()">Customize</button>
+        </div>
+    </div>
+
+    <div id="FewShotExampleModal" class="FewShotExampleModal">
+        <div class="modal-content">
+            <button id="hideFewShotExamples" class="btn btn-secondary" onclick="toggleFewShots()">Close Few-Shot Examples</button>
+            <div id="fewShotsContainer" class="prompt-container" >
+                <textarea id="fewShotsInput" rows="10" placeholder="Enter few-shot examples here..."></textarea>
+            </div>
+        </div>
+    </div>
     
-    <div id="defaultPromptContainer" class="prompt-container" style="display:none;">
+    <!-- <div id="defaultPromptContainer" class="prompt-container" style="display:none;">
         <div id="defaultPromptDisplay" class="prompt-display"></div>
         <button id="customizeBtn" class="btn btn-primary" onclick="enableCustomization()">Customize</button>
-    </div>
+    </div> -->
     
     <div id="customPromptContainer" class="prompt-container" style="display:none;">
         <textarea id="customPromptInput" rows="10" placeholder="Customize your prompt here..."></textarea>
@@ -123,22 +150,23 @@
         </div>
     </div>
 
-    <div id="fewShotsContainer" class="prompt-container" style="display:none;">
+    <!-- <div id="fewShotsContainer" class="prompt-container" style="display:none;">
         <textarea id="fewShotsInput" rows="10" placeholder="Enter few-shot examples here..."></textarea>
-    </div>
+    </div> -->
 
     <div id="summaryControls" class="summary-controls">
         <button class="btn btn-primary generate-btn" onclick="generateSummary()">Generate Summary</button>
+        
+        <div id="rawTextCopyDownloadIcons">
+            <button id="fullscreenBtn" class="btn btn-secondary">    <i class="fas fa-search-plus"></i></button>
+            <div onclick="copyText('summaryContent')"><i class="fa-solid fa-copy"></i></div>
+            <div onclick="downloadText('summaryContent', 'summary.txt')"><i class="fa-solid fa-download"></i></div>
+        </div>
     </div>
     
     <div id="summaryContent" class="summary-content"></div>
     <!-- Add this button to your result page HTML -->
-<button id="fullscreenBtn" class="btn btn-secondary">    <i class="fas fa-search-plus"></i></button>
-    
-    <div class="button-group">
-        <button class="btn btn-secondary" onclick="copyText('summaryContent')">Copy Summary</button>
-        <button class="btn btn-secondary" onclick="downloadText('summaryContent', 'summary.txt')">Download Summary</button>
-    </div>
+
 </div>
 
                 
@@ -151,17 +179,20 @@
                 
                 
 <div id="OneLinerSummary" class="tabcontent">
-    <h2>Detailed Summary</h2>
+    <div class="DetailedSummaryMessage">Select a section to generate the summary</div>
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <button onclick="fetchOpeningRemarksSummary()">Opening Remarks</button>
             <button onclick="fetchQASummary()">Q&A</button>
         </div>
+        <div id="DetailedSummaryIcons">
+            <div onclick="copySelectedOneLiners()"><i class="fa-solid fa-copy"></i></div>
+            <div onclick="downloadSelectedOneLiners()"><i class="fa-solid fa-download"></i></div>
+        </div>
         <!-- <button id="downloadCSVButton" class="btn btn-secondary" onclick="downloadCSV()">Download Categories</button> -->
     </div>
     <div id="oneLinerSummaryContent"></div>
-    <button onclick="copySelectedOneLiners()">Copy Selected</button>
-    <button onclick="downloadSelectedOneLiners()">Download Selected</button>
+    
 </div>
             
                
@@ -188,7 +219,7 @@
 
                 <!-- Chat Section -->
                 <div id="Chat" class="tabcontent">
-                    <h2>Chat with Assistant</h2>
+                    <!-- <h2>Chat with Assistant</h2> -->
                     <div id="chatContainer">
                         <div id="chatBox">
                             <div class="message system">

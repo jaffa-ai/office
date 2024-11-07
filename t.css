@@ -11,6 +11,7 @@ body {
 .container {
     width: 100%;
     padding: 20px;
+    padding-top: 2px;
     box-sizing: border-box;
 }
 
@@ -67,7 +68,7 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    margin-bottom: 20px;
+    /* margin-bottom: 10px; */
 }
 
 /* Waveform styling */
@@ -223,7 +224,48 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+.InstructionsModal, .FewShotExampleModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000000; /* Sit on top */
+    padding-top: 50px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.7);
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    max-height: 80vh;
+    overflow-y: scroll;
+    scrollbar-width: thin;
+}
+  
+  /* The Close Button */
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
 .prompt-display {
+    /* background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; */
     margin-bottom: 15px;
     line-height: 1.6;
 }
@@ -273,6 +315,7 @@ textarea {
 }
 
 .raw-text {
+    max-height: max-content;
     flex-basis: 30%;
     overflow-y: auto;
     padding: 10px;
@@ -280,6 +323,52 @@ textarea {
     border-radius: 5px;
     background-color: #fafafa;
     margin-right: 10px;
+    position: relative;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+#rawTextCopyDownloadIcons{
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 10px;
+    gap: 10px;
+}
+
+.TranscriptAccordion{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#TranscriptAccordionDownIcon{
+    padding: 5px;
+    cursor: pointer;
+}
+
+#TranscriptAccordionDownIcon:hover{
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.TranscriptAccordion h2{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.TranscriptAccordion i{
+    margin-left: auto;
+}
+
+#DetailedSummaryIcons{
+    display: flex;
+    font-size: 25px;
+    margin-top: 10px;
+    gap: 20px;
+}
+
+#rawTextHeading{
+    text-align: center;
 }
 
 #rawTextContent {
@@ -290,16 +379,45 @@ textarea {
     font-size: 16px;
     padding: 10px;
     border-radius: 10px;
-    
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+#scrollToTopIcon{
+    position: sticky;
+    bottom: 5px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+#scrollToTopIcon i{
+    padding: 5px;
+    color: white;
+    background-color: #080c37;
+    border-radius: 100%;
+}
+
+#scrollToTopIcon .ScrollToTopTooltip{
+    display: none;
+    font-size: 12px;
+    background-color: black;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#scrollToTopIcon:hover .ScrollToTopTooltip{
+    display: inline;
 }
 
 .tabs-section {
     flex-basis: 70%;
     overflow-y: auto;
     padding: 10px;
-    background-color: white;
+    scrollbar-width: thin;
+    /* background-color: white;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .tab-buttons {
@@ -308,7 +426,7 @@ textarea {
 }
 
 .tablink {
-    border: 2px solid rgb(25, 84, 94) !important;
+    border-bottom: 2px solid rgb(25, 84, 94) !important;
     border-radius: 2px;
     cursor: pointer;
     font-size: 16px; /* Increase font size for larger buttons */
@@ -330,6 +448,12 @@ textarea {
     border-radius: 10px;
     margin-top: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.DetailedSummaryMessage{
+    font-style: italic;
+    padding: 5px 10px;
+    margin: 10px 0;
 }
 
 .tabcontent h2 {
@@ -363,6 +487,7 @@ textarea {
 .tablink.active {
     background-color: #1c2f50;
     color: white;
+    border-radius: 10px;
 }
 /* Styling for the Generate Summary Section */
 #summaryControls {
@@ -925,6 +1050,7 @@ background-color: #3a7bc8;}
     cursor: pointer;
     margin-bottom: 10px;
 }
+
 
 .category-summary h4 {
     color: #28a745;
